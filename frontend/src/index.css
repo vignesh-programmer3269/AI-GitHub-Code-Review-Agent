@@ -36,3 +36,19 @@ h1, h2, h3, h4, h5, h6 {
 @utility glow {
   box-shadow: 0 0 100px 40px var(--color-accent);
 }
+
+/* Custom concise scrollbar for webkit */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-default);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-secondary);
+}
