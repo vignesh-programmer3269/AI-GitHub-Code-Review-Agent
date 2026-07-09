@@ -1,4 +1,3 @@
-// backend/src/services/github.service.js
 import axios from "axios";
 import { HttpError } from "../utils/HttpError.js";
 import { config } from "../config/index.js";
@@ -29,27 +28,27 @@ export const getRepoMetadata = async (owner, repo) => {
         throw new HttpError(
           404,
           "REPO_NOT_FOUND",
-          "Repository not found or is private."
+          "Repository not found or is private.",
         );
       }
       if (status === 403 && data?.message?.includes("rate limit")) {
         throw new HttpError(
           429,
           "RATE_LIMIT_EXCEEDED",
-          "GitHub API rate limit exceeded."
+          "GitHub API rate limit exceeded.",
         );
       }
       throw new HttpError(
         status,
         `GITHUB_${status}`,
-        data?.message || "GitHub request failed."
+        data?.message || "GitHub request failed.",
       );
     }
     // network or timeout errors
     throw new HttpError(
       503,
       "GITHUB_UNAVAILABLE",
-      "Unable to connect to GitHub."
+      "Unable to connect to GitHub.",
     );
   }
 };

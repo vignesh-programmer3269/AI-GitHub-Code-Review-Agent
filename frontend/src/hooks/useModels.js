@@ -1,17 +1,16 @@
 import { useState, useEffect } from "react";
 
-const MODELS_STORAGE_KEY = "ai_reviewer_models";
+const PROVIDER_KEYS_STORAGE_KEY = "ai_reviewer_provider_keys";
 const SELECTED_MODEL_KEY = "ai_reviewer_selected_model";
 
-const generateId = () => Math.random().toString(36).substr(2, 9);
-
 export function useModels() {
-  const [models, setModels] = useState(() => {
+  const [providerKeys, setProviderKeys] = useState(() => {
     try {
-      const stored = localStorage.getItem(MODELS_STORAGE_KEY);
+      // Migrate from old storage format if needed, but for now we just use the new key or fallback
+      const stored = localStorage.getItem(PROVIDER_KEYS_STORAGE_KEY);
       return stored ? JSON.parse(stored) : [];
     } catch (err) {
-      console.error("Error parsing stored models:", err);
+      console.error("Error parsing stored keys:", err);
       return [];
     }
   });
@@ -24,10 +23,10 @@ export function useModels() {
     }
   });
 
-  // Save changes to localStorage whenever models array changes
+  // Save changes to localStorage whenever keys array changes
   useEffect(() => {
-    localStorage.setItem(MODELS_STORAGE_KEY, JSON.stringify(models));
-  }, [models]);
+    localStorage.setItem(PROVIDER_KEYS_STORAGE_KEY, JSON.stringify(providerKeys));
+  }, [providerKeys]);
 
   useEffect(() => {
     if (selectedModelId) {
@@ -37,46 +36,43 @@ export function useModels() {
     }
   }, [selectedModelId]);
 
-  const addModel = (provider, modelName, apiKey) => {
-    const newModel = {
-      id: generateId(),
-      provider,
-      name: modelName,
+  const addKey = (providerId, providerName, apiKey) => {
+    // If provider already exists, this function shouldn't ideally be called (updateKey should be used),
+    // but we can handle it safely by filtering out old one.
+    const newProviderKey = {
+      providerId,
+      name: providerName,
       apiKey,
       createdAt: new Date().toISOString(),
     };
-    setModels((prev) => [...prev, newModel]);
-    setSelectedModelId(newModel.id);
+    setProviderKeys((prev) => [...prev.filter(p => p.providerId !== providerId), newProviderKey]);
   };
 
-  const updateModelKey = (id, newApiKey) => {
-    setModels((prev) =>
-      prev.map((m) => (m.id === id ? { ...m, apiKey: newApiKey } : m))
+  const updateKey = (providerId, newApiKey) => {
+    setProviderKeys((prev) =>
+      prev.map((p) => (p.providerId === providerId ? { ...p, apiKey: newApiKey } : p))
     );
   };
 
-  const deleteModel = (id) => {
-    setModels((prev) => prev.filter((m) => m.id !== id));
-    if (selectedModelId === id) {
-      setSelectedModelId(null);
-    }
+  const deleteKey = (providerId) => {
+    setProviderKeys((prev) => prev.filter((p) => p.providerId !== providerId));
   };
 
-  const selectModel = (id) => {
-    setSelectedModelId(id);
+  const selectModel = (modelId) => {
+    setSelectedModelId(modelId);
   };
 
-  const getSelectedModel = () => {
-    return models.find((m) => m.id === selectedModelId) || null;
+  const getProviderKey = (providerId) => {
+    return providerKeys.find((p) => p.providerId === providerId) || null;
   };
 
   return {
-    models,
+    providerKeys,
     selectedModelId,
-    addModel,
-    updateModelKey,
-    deleteModel,
+    addKey,
+    updateKey,
+    deleteKey,
     selectModel,
-    getSelectedModel,
+    getProviderKey,
   };
 }

@@ -13,7 +13,19 @@ export const repoService = {
     const response = await api.post("/repo/validate", { repoUrl: url });
     return response.data;
   },
-  // analyze: async (url) => api.post('/repo/analyze', { url }), // uncomment for future
+};
+
+export const llmService = {
+  testProvider: async (provider, model, apiKey) => {
+    // The backend uses provider, model, apiKey, and a simple prompt
+    const response = await api.post("/llm/test", {
+      provider,
+      model,
+      apiKey,
+      prompt: "You are an AI assistant.\n\nSummarize the following repository metadata.\n\nRepository Name: AI GitHub Code Review Agent\n\nPrimary Language: JavaScript\n\nDescription: AI powered GitHub repository analyzer."
+    });
+    return response.data;
+  }
 };
 
 export default api;

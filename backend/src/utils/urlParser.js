@@ -1,4 +1,3 @@
-// backend/src/utils/urlParser.js
 /**
  * Parses a GitHub repository URL and extracts the owner and repo name.
  * Assumes the URL has already been validated on the frontend.

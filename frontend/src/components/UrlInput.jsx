@@ -30,15 +30,16 @@ export default function UrlInput() {
 
   // Model selection state
   const {
-    models,
+    providerKeys,
     selectedModelId,
-    addModel,
-    updateModelKey,
-    deleteModel,
+    addKey,
+    updateKey,
+    deleteKey,
     selectModel,
   } = useModels();
   
   const [isManageModalOpen, setIsManageModalOpen] = useState(false);
+  const [manageDefaultProvider, setManageDefaultProvider] = useState(null);
   const [modelError, setModelError] = useState(false);
   const modelSelectorRef = useRef(null);
 
@@ -156,13 +157,16 @@ export default function UrlInput() {
           <div className="w-full sm:w-[30%] h-14 relative z-20">
             <ModelSelector
               ref={modelSelectorRef}
-              models={models}
+              providerKeys={providerKeys}
               selectedModelId={selectedModelId}
               onSelect={(id) => {
                 selectModel(id);
                 setModelError(false);
               }}
-              onOpenManage={() => setIsManageModalOpen(true)}
+              onOpenManage={(providerId = null) => {
+                setManageDefaultProvider(providerId);
+                setIsManageModalOpen(true);
+              }}
               hasError={modelError}
             />
           </div>
@@ -195,11 +199,15 @@ export default function UrlInput() {
 
       <ManageModelsModal
         isOpen={isManageModalOpen}
-        onClose={() => setIsManageModalOpen(false)}
-        models={models}
-        onAddModel={addModel}
-        onUpdateModel={updateModelKey}
-        onDeleteModel={deleteModel}
+        onClose={() => {
+          setIsManageModalOpen(false);
+          setManageDefaultProvider(null);
+        }}
+        providerKeys={providerKeys}
+        onAddKey={addKey}
+        onUpdateKey={updateKey}
+        onDeleteKey={deleteKey}
+        defaultProviderId={manageDefaultProvider}
       />
     </motion.div>
   );

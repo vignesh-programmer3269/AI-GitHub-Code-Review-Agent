@@ -14,7 +14,6 @@ export const validateRepo = async (req, res, next) => {
   try {
     // Validate payload shape
     const { repoUrl } = validationSchema.parse(req.body);
-    console.log(repoUrl);
 
     // Extract owner/repo from URL
     const { owner, repo } = parseRepoUrl(repoUrl);

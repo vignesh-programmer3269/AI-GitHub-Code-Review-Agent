@@ -4,10 +4,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import ProviderLogo from "../ProviderLogo/ProviderLogo";
 import { useClickOutside } from "../../hooks/useClickOutside";
 
-export default function StoredModelItem({ model, onUpdate, onDelete }) {
+export default function StoredModelItem({ providerKey, onUpdate, onDelete }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [editKey, setEditKey] = useState(model.apiKey);
+  const [editKey, setEditKey] = useState(providerKey.apiKey);
   const [showKey, setShowKey] = useState(false);
   
   const menuRef = useRef(null);
@@ -23,30 +23,30 @@ export default function StoredModelItem({ model, onUpdate, onDelete }) {
         setIsMenuOpen(false);
         if (isEditing) {
           setIsEditing(false);
-          setEditKey(model.apiKey);
+          setEditKey(providerKey.apiKey);
         }
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isEditing, model.apiKey]);
+  }, [isEditing, providerKey.apiKey]);
 
   const handleUpdate = () => {
-    if (editKey.trim() && editKey !== model.apiKey) {
-      onUpdate(model.id, editKey.trim());
+    if (editKey.trim() && editKey !== providerKey.apiKey) {
+      onUpdate(providerKey.providerId, editKey.trim());
     }
     setIsEditing(false);
   };
 
   const handleCancel = () => {
-    setEditKey(model.apiKey);
+    setEditKey(providerKey.apiKey);
     setIsEditing(false);
   };
 
   // Mask key logic (e.g. ************abcd)
   const maskedKey = 
-    model.apiKey.length > 4 
-      ? "*".repeat(12) + model.apiKey.slice(-4)
+    providerKey.apiKey.length > 4 
+      ? "*".repeat(12) + providerKey.apiKey.slice(-4)
       : "*".repeat(8);
 
   return (
@@ -56,11 +56,11 @@ export default function StoredModelItem({ model, onUpdate, onDelete }) {
         {/* Left side: Logo & Info */}
         <div className="flex items-center gap-3 overflow-hidden flex-1">
           <div className="w-8 h-8 rounded bg-bg-surface border border-border-default flex items-center justify-center shrink-0">
-            <ProviderLogo provider={model.provider} className="w-4 h-4" />
+            <ProviderLogo provider={providerKey.providerId} className="w-4 h-4" />
           </div>
           <div className="flex flex-col min-w-0">
             <span className="text-sm font-medium text-text-primary truncate">
-              {model.name}
+              {providerKey.name}
             </span>
             
             {/* Inline Editor for API Key */}
@@ -136,13 +136,13 @@ export default function StoredModelItem({ model, onUpdate, onDelete }) {
                 </button>
                 <button
                   onClick={() => {
-                    onDelete(model.id);
+                    onDelete(providerKey.providerId);
                     setIsMenuOpen(false);
                   }}
                   className="w-full text-left px-3 py-2 text-sm text-danger hover:bg-danger/10 flex items-center gap-2"
                 >
                   <FiTrash2 className="w-4 h-4" />
-                  Delete Model
+                  Delete API Key
                 </button>
               </motion.div>
             )}

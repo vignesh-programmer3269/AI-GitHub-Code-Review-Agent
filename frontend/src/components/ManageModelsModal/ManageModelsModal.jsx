@@ -6,24 +6,27 @@ import StoredModelItem from "./StoredModelItem";
 import ConfirmationDialog from "./ConfirmationDialog";
 import toast from "react-hot-toast";
 import { AVAILABLE_MODELS } from "../../config/constants";
+import { llmService } from "../../services/api";
 
 export default function ManageModelsModal({
   isOpen,
   onClose,
-  models, // Locally stored API keys
-  onUpdateModel,
-  onDeleteModel,
-  onAddModel,
+  providerKeys, // Locally stored API keys per provider
+  onUpdateKey,
+  onDeleteKey,
+  onAddKey,
+  defaultProviderId,
 }) {
   const providers = AVAILABLE_MODELS;
 
   const [providerId, setProviderId] = useState("");
-  const [modelId, setModelId] = useState("");
   const [apiKey, setApiKey] = useState("");
   const [showKey, setShowKey] = useState(false);
 
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [modelToDelete, setModelToDelete] = useState(null);
+  const [existingModelToUpdate, setExistingModelToUpdate] = useState(null);
+  const [isTestingKey, setIsTestingKey] = useState(false);
 
   // Focus trap & escape
   useEffect(() => {
@@ -33,6 +36,8 @@ export default function ManageModelsModal({
       if (e.key === "Escape") {
         if (modelToDelete) {
           setModelToDelete(null);
+        } else if (existingModelToUpdate) {
+          setExistingModelToUpdate(null);
         } else if (isConfirmOpen) {
           setIsConfirmOpen(false);
         } else {
@@ -43,41 +48,31 @@ export default function ManageModelsModal({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, isConfirmOpen, modelToDelete, onClose]);
+  }, [isOpen, isConfirmOpen, modelToDelete, existingModelToUpdate, onClose]);
 
-  // Set default provider when data loads
   useEffect(() => {
-    if (providers.length > 0 && !providerId) {
+    if (defaultProviderId) {
+      setProviderId(defaultProviderId);
+    } else if (providers.length > 0 && !providerId) {
       setProviderId(providers[0].id);
     }
-  }, [providers, providerId]);
-
-  // Set default model when provider changes
-  useEffect(() => {
-    if (providerId) {
-      const selectedProvider = providers.find((p) => p.id === providerId);
-      if (selectedProvider && selectedProvider.models.length > 0) {
-        // Find recommended model or fallback to first
-        const recommended = selectedProvider.models.find((m) => m.recommended);
-        setModelId(
-          recommended ? recommended.id : selectedProvider.models[0].id,
-        );
-      }
-    }
-  }, [providerId, providers]);
+  }, [providers, providerId, defaultProviderId]);
 
   // Reset form when modal closes
   useEffect(() => {
     if (!isOpen) {
-      if (providers.length > 0) {
+      if (defaultProviderId) {
+        setProviderId(defaultProviderId);
+      } else if (providers.length > 0) {
         setProviderId(providers[0].id);
       }
       setApiKey("");
       setShowKey(false);
       setIsConfirmOpen(false);
       setModelToDelete(null);
+      setExistingModelToUpdate(null);
     }
-  }, [isOpen, providers]);
+  }, [isOpen, providers, defaultProviderId]);
 
   const handleDeleteClick = (id) => {
     setModelToDelete(id);
@@ -85,7 +80,7 @@ export default function ManageModelsModal({
 
   const handleConfirmDelete = () => {
     if (modelToDelete) {
-      onDeleteModel(modelToDelete);
+      onDeleteKey(modelToDelete);
       toast.success("API Key deleted successfully", {
         style: {
           background: "var(--color-bg-card)",
@@ -102,31 +97,107 @@ export default function ManageModelsModal({
   };
 
   const handleSaveClick = () => {
-    if (!providerId || !modelId || !apiKey.trim()) return;
+    if (!providerId || !apiKey.trim()) return;
+
+    const currentKey = apiKey.trim();
+
+    // Check for duplicate key across all providers
+    const keyExists = providerKeys.find((p) => p.apiKey === currentKey);
+    if (keyExists) {
+      toast.error("This API key is already stored.", {
+        style: {
+          background: "var(--color-bg-card)",
+          color: "var(--color-text-primary)",
+          border: "1px solid var(--color-border-default)",
+        }
+      });
+      return;
+    }
+
+    // Check if provider already has a key
+    const providerExists = providerKeys.find((p) => p.providerId === providerId);
+    if (providerExists) {
+      setExistingModelToUpdate(providerExists);
+      return;
+    }
+
     setIsConfirmOpen(true);
+  };
+
+  const testAndSaveKey = async (pId, pName, newKey, isUpdate = false) => {
+    setIsTestingKey(true);
+    const selectedProvider = providers.find((p) => p.id === pId);
+    const defaultModel = selectedProvider?.models[0]?.id;
+
+    const toastStyle = {
+      background: "var(--color-bg-card)",
+      color: "var(--color-text-primary)",
+      border: "1px solid var(--color-border-default)",
+    };
+
+    try {
+      const response = await llmService.testProvider(pId, defaultModel, newKey);
+      
+      if (response.success) {
+        if (isUpdate) {
+          onUpdateKey(pId, newKey);
+          setExistingModelToUpdate(null);
+        } else {
+          onAddKey(pId, pName, newKey);
+          toast.success("Connected Successfully", { style: toastStyle });
+        }
+        setIsConfirmOpen(false);
+        onClose();
+        return true;
+      } else {
+        toast.error(response.error?.message || "Failed to verify API key", { style: toastStyle });
+        return false;
+      }
+    } catch (err) {
+      toast.error("Failed to verify API key", { style: toastStyle });
+      return false;
+    } finally {
+      setIsTestingKey(false);
+    }
+  };
+
+  const handleConfirmUpdate = () => {
+    if (existingModelToUpdate) {
+      testAndSaveKey(
+        existingModelToUpdate.providerId,
+        existingModelToUpdate.name,
+        apiKey.trim(),
+        true
+      );
+    }
+  };
+
+  const handleCancelUpdate = () => {
+    setExistingModelToUpdate(null);
   };
 
   const handleConfirmSave = () => {
     const selectedProvider = providers.find((p) => p.id === providerId);
-    const selectedModel = selectedProvider?.models.find(
-      (m) => m.id === modelId,
-    );
-
-    // We store provider name and model name along with the key for easy display in UI
-    onAddModel(
+    testAndSaveKey(
+      providerId,
       selectedProvider?.name || providerId,
-      selectedModel?.label || modelId,
       apiKey.trim(),
+      false
     );
-    setIsConfirmOpen(false);
-    onClose();
+  };
+
+  const handleStoredModelUpdate = async (pId, newKey) => {
+    const providerKeyObj = providerKeys.find(p => p.providerId === pId);
+    if (providerKeyObj) {
+      await testAndSaveKey(pId, providerKeyObj.name, newKey, true);
+    }
   };
 
   const handleCancelSave = () => {
     setIsConfirmOpen(false);
   };
 
-  const isFormValid = providerId && modelId && apiKey.trim();
+  const isFormValid = providerId && apiKey.trim();
 
   const selectedProviderData = providers.find((p) => p.id === providerId);
 
@@ -142,7 +213,7 @@ export default function ManageModelsModal({
               transition={{ duration: 0.2 }}
               className="absolute inset-0 bg-black/40 backdrop-blur-sm"
               onClick={() => {
-                if (!isConfirmOpen && !modelToDelete) onClose();
+                if (!isConfirmOpen && !modelToDelete && !existingModelToUpdate) onClose();
               }}
             />
 
@@ -163,10 +234,10 @@ export default function ManageModelsModal({
                     id="manage-models-title"
                     className="text-lg font-semibold text-text-primary"
                   >
-                    Manage AI Models
+                    Manage API Keys
                   </h2>
                   <p className="text-sm text-text-secondary">
-                    Manage locally stored API keys.
+                    Manage locally stored provider API keys.
                   </p>
                 </div>
                 <button
@@ -180,19 +251,19 @@ export default function ManageModelsModal({
 
               {/* Body */}
               <div className="overflow-y-auto p-4 flex flex-col gap-6">
-                {/* List of Models */}
+                {/* List of Keys */}
                 <div>
-                  {models.length === 0 ? (
+                  {providerKeys.length === 0 ? (
                     <div className="text-center py-6 text-sm text-text-secondary bg-bg-subtle rounded-lg border border-dashed border-border-default">
-                      No models stored yet.
+                      No API keys stored yet.
                     </div>
                   ) : (
                     <div className="flex flex-col">
-                      {models.map((m) => (
+                      {providerKeys.map((pk) => (
                         <StoredModelItem
-                          key={m.id}
-                          model={m}
-                          onUpdate={onUpdateModel}
+                          key={pk.providerId}
+                          providerKey={pk}
+                          onUpdate={handleStoredModelUpdate}
                           onDelete={handleDeleteClick}
                         />
                       ))}
@@ -202,10 +273,10 @@ export default function ManageModelsModal({
 
                 <div className="h-px bg-border-default/60" />
 
-                {/* Add New Model Form */}
+                {/* Add New Key Form */}
                 <div className="flex flex-col gap-4">
                   <h3 className="text-sm font-medium text-text-primary flex items-center gap-2">
-                    <FiPlus className="text-accent" /> Add New Model
+                    <FiPlus className="text-accent" /> Add API Key
                   </h3>
 
                   <div className="flex flex-col gap-3">
@@ -228,30 +299,6 @@ export default function ManageModelsModal({
                             }}
                           >
                             {p.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-medium text-text-secondary mb-1">
-                        Model Name
-                      </label>
-                      <select
-                        value={modelId}
-                        onChange={(e) => setModelId(e.target.value)}
-                        className="w-full bg-bg-surface border border-border-default text-text-primary text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent appearance-none transition-colors"
-                      >
-                        {selectedProviderData?.models.map((m) => (
-                          <option
-                            key={m.id}
-                            value={m.id}
-                            style={{
-                              backgroundColor: "#1C2128",
-                              color: "#f0f6fc",
-                            }}
-                          >
-                            {m.label} {m.recommended && "(Recommended)"}
                           </option>
                         ))}
                       </select>
@@ -285,14 +332,14 @@ export default function ManageModelsModal({
                   </div>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={handleSaveClick}
-                  disabled={!isFormValid}
-                  className="mt-2 w-full flex items-center justify-center py-2.5 rounded-lg bg-accent text-white font-medium text-sm hover:bg-accent-hover active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                >
-                  Save Model
-                </button>
+                  <button
+                    type="button"
+                    onClick={handleSaveClick}
+                    disabled={!isFormValid || isTestingKey}
+                    className="mt-2 w-full flex items-center justify-center py-2.5 rounded-lg bg-accent text-white font-medium text-sm hover:bg-accent-hover active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  >
+                    {isTestingKey ? <BiLoaderAlt className="w-5 h-5 animate-spin" /> : "Save API Key"}
+                  </button>
               </div>
             </motion.div>
           </div>
@@ -318,6 +365,20 @@ export default function ManageModelsModal({
         }
         confirmText="Delete"
         isDanger={true}
+      />
+
+      <ConfirmationDialog
+        isOpen={!!existingModelToUpdate}
+        onConfirm={handleConfirmUpdate}
+        onCancel={handleCancelUpdate}
+        title="Update API Key?"
+        message={
+          <p>
+            An API key is already stored for this provider. Do you want to update it with the new key?
+          </p>
+        }
+        confirmText="Update"
+        isDanger={false}
       />
     </>
   );
