@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -9,10 +9,6 @@ import { BiLoaderAlt } from "react-icons/bi";
 import toast from "react-hot-toast";
 import { repoService } from "../services/api";
 import { cn } from "../utils/cn";
-
-import { useModels } from "../hooks/useModels";
-import ModelSelector from "./ModelSelector/ModelSelector";
-import ManageModelsModal from "./ManageModelsModal/ManageModelsModal";
 
 const schema = z.object({
   url: z
@@ -28,21 +24,6 @@ export default function UrlInput() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Model selection state
-  const {
-    providerKeys,
-    selectedModelId,
-    addKey,
-    updateKey,
-    deleteKey,
-    selectModel,
-  } = useModels();
-  
-  const [isManageModalOpen, setIsManageModalOpen] = useState(false);
-  const [manageDefaultProvider, setManageDefaultProvider] = useState(null);
-  const [modelError, setModelError] = useState(false);
-  const modelSelectorRef = useRef(null);
-
   const {
     register,
     handleSubmit,
@@ -56,23 +37,6 @@ export default function UrlInput() {
   const urlValue = watch("url");
 
   const onSubmit = async (data) => {
-    // Validate that a model is selected
-    if (!selectedModelId) {
-      setModelError(true);
-      toast.error("Please select an AI model.", {
-        icon: "⚠️",
-        style: {
-          background: "var(--color-bg-card)",
-          color: "var(--color-text-primary)",
-          border: "1px solid var(--color-border-default)",
-        },
-      });
-      // Programmatically open the dropdown
-      modelSelectorRef.current?.openDropdown();
-      return;
-    }
-
-    setModelError(false);
     setIsLoading(true);
     
     try {
@@ -82,7 +46,7 @@ export default function UrlInput() {
 
       toast.success("Repository verified!");
       navigate("/dashboard", {
-        state: { repoUrl: cleanUrl, repoData: response, selectedModelId },
+        state: { repoUrl: cleanUrl, repoData: response },
       });
     } catch (error) {
       console.error(error);
@@ -113,67 +77,45 @@ export default function UrlInput() {
     >
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
         
-        {/* First Row: Input (70%) + Selector (30%) */}
-        <div className="flex flex-col sm:flex-row items-start gap-4 h-auto sm:h-14">
+        {/* URL Input */}
+        <div className="relative w-full h-14">
+          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <FiGithub className="h-5 w-5 text-text-secondary group-focus-within:text-accent transition-colors duration-300" />
+          </div>
+          <input
+            type="text"
+            {...register("url")}
+            disabled={isLoading}
+            placeholder="https://github.com/owner/repository"
+            className={cn(
+              "block w-full h-full pl-12 pr-4 rounded-xl bg-bg-surface border text-text-primary placeholder:text-text-secondary focus:outline-none focus:ring-2 transition-all duration-300 shadow-sm",
+              errors.url
+                ? "border-danger focus:ring-danger/20 focus:border-danger"
+                : "border-border-default focus:ring-accent/20 focus:border-accent hover:border-text-secondary/50",
+              isLoading && "opacity-60 cursor-not-allowed"
+            )}
+            autoComplete="off"
+            spellCheck="false"
+          />
           
-          {/* Repo URL Input */}
-          <div className="relative w-full sm:w-[70%] h-14">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <FiGithub className="h-5 w-5 text-text-secondary group-focus-within:text-accent transition-colors duration-300" />
-            </div>
-            <input
-              type="text"
-              {...register("url")}
-              disabled={isLoading}
-              placeholder="https://github.com/owner/repository"
-              className={cn(
-                "block w-full h-full pl-12 pr-4 rounded-xl bg-bg-surface border text-text-primary placeholder:text-text-secondary focus:outline-none focus:ring-2 transition-all duration-300 shadow-sm",
-                errors.url
-                  ? "border-danger focus:ring-danger/20 focus:border-danger"
-                  : "border-border-default focus:ring-accent/20 focus:border-accent hover:border-text-secondary/50",
-                isLoading && "opacity-60 cursor-not-allowed"
-              )}
-              autoComplete="off"
-              spellCheck="false"
-            />
-            
-            {/* Inline URL Error */}
-            <AnimatePresence mode="wait">
-              {errors.url && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0, y: -5 }}
-                  animate={{ opacity: 1, height: "auto", y: 0 }}
-                  exit={{ opacity: 0, height: 0, y: -5 }}
-                  className="absolute top-[calc(100%+8px)] left-0 flex items-center text-sm text-danger overflow-hidden"
-                >
-                  <FiAlertCircle className="mr-1.5 h-4 w-4 shrink-0" />
-                  <span>{errors.url.message}</span>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* Model Selector */}
-          <div className="w-full sm:w-[30%] h-14 relative z-20">
-            <ModelSelector
-              ref={modelSelectorRef}
-              providerKeys={providerKeys}
-              selectedModelId={selectedModelId}
-              onSelect={(id) => {
-                selectModel(id);
-                setModelError(false);
-              }}
-              onOpenManage={(providerId = null) => {
-                setManageDefaultProvider(providerId);
-                setIsManageModalOpen(true);
-              }}
-              hasError={modelError}
-            />
-          </div>
+          {/* Inline URL Error */}
+          <AnimatePresence mode="wait">
+            {errors.url && (
+              <motion.div
+                initial={{ opacity: 0, height: 0, y: -5 }}
+                animate={{ opacity: 1, height: "auto", y: 0 }}
+                exit={{ opacity: 0, height: 0, y: -5 }}
+                className="absolute top-[calc(100%+8px)] left-0 flex items-center text-sm text-danger overflow-hidden"
+              >
+                <FiAlertCircle className="mr-1.5 h-4 w-4 shrink-0" />
+                <span>{errors.url.message}</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
-        {/* Second Row: Submit Button */}
-        <div className="flex justify-center mt-4 sm:mt-2">
+        {/* Submit Button */}
+        <div className="flex justify-center mt-2">
           <button
             type="submit"
             disabled={!isValid || isLoading || !isDirty}
@@ -196,19 +138,6 @@ export default function UrlInput() {
           </button>
         </div>
       </form>
-
-      <ManageModelsModal
-        isOpen={isManageModalOpen}
-        onClose={() => {
-          setIsManageModalOpen(false);
-          setManageDefaultProvider(null);
-        }}
-        providerKeys={providerKeys}
-        onAddKey={addKey}
-        onUpdateKey={updateKey}
-        onDeleteKey={deleteKey}
-        defaultProviderId={manageDefaultProvider}
-      />
     </motion.div>
   );
 }

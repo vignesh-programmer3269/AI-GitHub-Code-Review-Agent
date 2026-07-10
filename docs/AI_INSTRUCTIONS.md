@@ -35,14 +35,14 @@ If you (the building LLM) hit a requirement that isn't covered by these 10 files
 
 ## 4. Build Order
 
-Follow `TASKS.md` phase by phase. Do not build frontend agent-interaction UI (Phase 9+) before the orchestrator (Phase 6) is functional against at least one working LLM provider. Do not add OpenAI/Gemini provider adapters before Claude is working end-to-end through the full pipeline once (see `TASKS.md`, "Notes on Sequencing").
+Follow `TASKS.md` phase by phase. Do not build frontend agent-interaction UI (Phase 9+) before the orchestrator (Phase 6) is functional against a working LLM gateway (`llm.service` talking to Puter, per Phase 4). See `TASKS.md`, "Notes on Sequencing".
 
 ## 5. Definition of Done (for the project as a whole)
 
 A user can, without logging in or providing any credentials:
 1. Paste a public GitHub URL and have it validated client-side.
 2. See a repo summary and agent recommendations with token estimates.
-3. Select agents and a provider, and watch results stream in per agent.
+3. Select agents to run, and watch results stream in per agent.
 4. View a full tabbed report, including the mandatory Security disclaimer.
 5. Export that report as PDF or as Markdown.
 

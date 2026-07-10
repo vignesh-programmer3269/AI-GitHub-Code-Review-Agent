@@ -100,7 +100,7 @@ These were not specified in requirements gathering and are treated as adjustable
 | `MAX_REPO_FILES_CONSIDERED` | 5000 | Repos with more files (after exclusions) are still summarized at tree level but raw content fetching is capped |
 | `MAX_REPO_SIZE_KB` | 512000 (500 MB) | Repos larger than this are rejected at Step 2 with a clear error |
 | Token budget — Planning | 4,000 input tokens | Metadata + README + manifests only |
-| Token budget — Code Review / Security / Performance / Architecture / Documentation | 12,000 input tokens each (default) | Adjustable per selected LLM provider's context window |
+| Token budget — Code Review / Security / Performance / Architecture / Documentation | 12,000 input tokens each (default) | Adjustable per the model `llm.service` assigns to that agent internally |
 | Token budget — Roadmap | 6,000 input tokens | Built from other agents' JSON outputs, which are already compact |
 
 ## 7. File Summaries (Lazy Generation)

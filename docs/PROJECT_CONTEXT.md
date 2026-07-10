@@ -6,7 +6,7 @@
 
 This project exists to **demonstrate**, in a portfolio-quality build:
 - Context engineering (shared context by reference, not raw duplication, across multiple agents)
-- Tool orchestration (GitHub API + multiple LLM provider APIs coordinated by a backend orchestrator)
+- Tool orchestration (GitHub API + a backend LLM gateway coordinated by a backend orchestrator)
 - Multi-agent workflow design (plan-then-execute, with dependent and independent agents)
 
 ## 2. Problem Statement
@@ -46,7 +46,7 @@ Each agent operates with its own specialized prompt and returns a structured JSO
 - Public GitHub repositories only.
 - No end-user authentication of any kind (anonymous, single-session use).
 - No persistence — all data lives in memory for the duration of a session and is discarded after.
-- Multi-LLM-provider support: Claude (Anthropic), OpenAI, and Google Gemini, user-selectable.
+- Single LLM Gateway (Puter): the backend is the only component that communicates with the LLM gateway; agents request AI responses through it and the backend routes each agent to an appropriate model internally. No user-facing provider or model selection, and no user-provided API keys.
 - Server-side GitHub Personal Access Token (PAT) for higher GitHub API rate limits — this is a backend credential, not a user login.
 - Progressive, streamed results via Server-Sent Events (SSE).
 - Export to PDF and Markdown.

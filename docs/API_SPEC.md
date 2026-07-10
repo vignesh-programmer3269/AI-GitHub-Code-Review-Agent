@@ -65,8 +65,7 @@ Kicks off the selected specialized agents.
 **Request:**
 ```json
 {
-  "selectedAgents": ["codeReview", "security", "performance", "architecture", "documentation", "roadmap"],
-  "provider": "claude | openai | gemini"
+  "selectedAgents": ["codeReview", "security", "performance", "architecture", "documentation", "roadmap"]
 }
 ```
 **Response 202 (Accepted):**
@@ -156,10 +155,8 @@ NODE_ENV=development
 # GitHub — server-side PAT, no end-user GitHub auth anywhere in this app
 GITHUB_PAT=
 
-# LLM providers — all three required since provider is user-selectable per run
-ANTHROPIC_API_KEY=
-OPENAI_API_KEY=
-GEMINI_API_KEY=
+# LLM Gateway — only the backend holds this; frontend has no knowledge of it
+PUTER_API_KEY=
 
 # Context engine limits (defaults documented in CONTEXT_ENGINE.md §6; overridable here)
 SESSION_TTL_MINUTES=30

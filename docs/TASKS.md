@@ -19,13 +19,13 @@ Ordered build phases. Each phase should be completable and demoable before movin
 - [ ] Implement exclusion-list filtering (CONTEXT_ENGINE.md §4) as a shared utility used by all Context Builders.
 
 ## Phase 3 — Planning Agent
-- [ ] Implement `planningAgent.js` — builds its context (README + manifests + tree + language stats only), calls the LLM provider, validates against `RepositoryAnalysisResult` schema.
+- [ ] Implement `planningAgent.js` — builds its context (README + manifests + tree + language stats only), calls the LLM gateway (`llm.service`), validates against `RepositoryAnalysisResult` schema.
 - [ ] Wire `POST /api/repo/analyze` end to end (metadata fetch → context init → planning agent → response).
 
-## Phase 4 — LLM Provider Abstraction
-- [ ] Implement `providerInterface.js` contract.
-- [ ] Implement `claudeProvider.js`, `openaiProvider.js`, `geminiProvider.js` against the same contract.
-- [ ] Implement structured-output enforcement (JSON schema validation) + the retry policy (see DECISIONS.md) for all three.
+## Phase 4 — LLM Gateway (llm.service)
+- [ ] Implement `llm.service.js` as the sole module that communicates with Puter.
+- [ ] Implement internal agent-to-model routing configuration inside `llm.service` (not exposed to any other module or the frontend).
+- [ ] Implement structured-output enforcement (JSON schema validation) + the retry policy (see DECISIONS.md).
 
 ## Phase 5 — Specialized Agents + Context Builders
 - [ ] Context Builders: `codeReview`, `security`, `performance`, `architecture`, `documentation` per selection rules in CONTEXT_ENGINE.md §4.
@@ -49,7 +49,7 @@ Ordered build phases. Each phase should be completable and demoable before movin
 - [ ] `RepoSummaryCard` rendering the Planning Agent's summary.
 
 ## Phase 9 — Agent Selection UI
-- [ ] `AgentSelection` component: recommendation checklist + token estimates + provider selector, per UI_GUIDELINES.md §5.3.
+- [ ] `AgentSelection` component: recommendation checklist + token estimates, per UI_GUIDELINES.md §5.3.
 - [ ] Wire to `run-agents` endpoint.
 
 ## Phase 10 — Streaming Progress + Report View
@@ -74,5 +74,5 @@ Ordered build phases. Each phase should be completable and demoable before movin
 
 ## Notes on Sequencing
 
-- Do not start Phase 9+ (frontend interaction with agents) before Phase 6 (orchestrator) is working against at least a mocked provider — otherwise the frontend has nothing real to integrate against.
-- Provider abstraction (Phase 4) should be built with at least Claude working end-to-end before adding OpenAI/Gemini, so the rest of the pipeline (Phases 5-7) can be developed and tested against one working provider first.
+- Do not start Phase 9+ (frontend interaction with agents) before Phase 6 (orchestrator) is working against at least a mocked `llm.service` — otherwise the frontend has nothing real to integrate against.
+- The LLM gateway (Phase 4) should be working end-to-end against Puter before Phases 5-7 are built out, so the rest of the pipeline can be developed and tested against a real, working gateway from the start.
