@@ -5,9 +5,10 @@ Architecture Decision Record log. Every decision below is either **CONFIRMED** (
 ---
 
 ### D-001 — LLM Provider Strategy
-**Status:** CONFIRMED
-**Decision:** Multi-provider — Claude (Anthropic), OpenAI, and Google Gemini — user-selectable at run time.
-**Note:** Provider choice is a single selection applied to the whole run (all agents in that run use the same provider), not per-agent. Per-agent provider mixing was not requested; if wanted later, add as a new task in TASKS.md and a new decision here.
+**Status:** SUPERSEDED by D-014
+**Decision (original):** Multi-provider — Claude (Anthropic), OpenAI, and Google Gemini — user-selectable at run time.
+**Note:** Provider choice was a single selection applied to the whole run (all agents in that run use the same provider), not per-agent.
+**Superseded because:** the project moved to a single backend-owned LLM gateway (Puter) with no user-facing provider selection at all — see D-014.
 
 ### D-002 — User Authentication
 **Status:** CONFIRMED
@@ -47,12 +48,13 @@ Architecture Decision Record log. Every decision below is either **CONFIRMED** (
 **Decision:** See CONTEXT_ENGINE.md §6 for the full table (session TTL 30 min, max file content 50 KB, max repo size 500 MB, per-agent token budgets 4k-12k). These are standard, conservative engineering defaults, not requirements gathered from the project owner.
 
 ### D-010 — Single Provider Per Run (not per agent)
-**Status:** ASSUMED — please confirm
-**Decision:** The user picks one LLM provider for the whole run rather than mixing providers per agent. Simpler to build and reason about first; per-agent provider selection can be added later without breaking the architecture (the provider abstraction already supports it).
+**Status:** SUPERSEDED by D-014
+**Decision (original):** The user picks one LLM provider for the whole run rather than mixing providers per agent.
+**Superseded because:** there is no longer any user-facing provider concept at all. The spirit of this decision survives in a different form — different agents *can* use different models internally — but it's now a backend routing detail owned by `llm.service`, not a user choice. See D-014.
 
 ### D-011 — Retry Policy for Failed Agent Calls
 **Status:** ASSUMED — please confirm
-**Decision:** One automatic retry (same provider) on schema-validation failure or transient error before marking an agent as errored in the UI. No exponential backoff beyond a single retry, to keep the demo responsive.
+**Decision:** One automatic retry (via `llm.service`) on schema-validation failure or transient error before marking an agent as errored in the UI. No exponential backoff beyond a single retry, to keep the demo responsive.
 
 ### D-012 — Security Agent Disclaimer Requirement
 **Status:** ASSUMED, but treated as a hard requirement going forward
@@ -61,6 +63,14 @@ Architecture Decision Record log. Every decision below is either **CONFIRMED** (
 ### D-013 — Single-Instance Deployment Assumption
 **Status:** ASSUMED — please confirm
 **Decision:** The in-memory session store assumes a single backend process/instance. No shared cache (e.g. Redis) is included, since that would reintroduce external infrastructure the "no database" decision was meant to avoid. If horizontal scaling is needed later, this needs a follow-up decision (likely a shared in-memory store like Redis used purely as a cache, not a database — would need explicit sign-off since it changes the "no external persistence" constraint).
+
+### D-014 — Single LLM Gateway via Puter (supersedes D-001, D-010)
+**Status:** CONFIRMED
+**Decision:** The application no longer supports multiple, user-selectable LLM providers. All AI communication now goes through a single backend module, `llm.service`, which is the only part of the codebase that talks to Puter. The call chain is always `Agent → llm.service → Puter → configured AI model`.
+**What was removed:** the Claude/OpenAI/Gemini provider adapters, the shared `providerInterface.js` multi-provider contract, provider selection in the API and UI, model selection by users, and any notion of user-provided API keys or frontend-side key management (including localStorage-based key handling, which was never implemented but is explicitly ruled out going forward).
+**What replaced it:** different agents may still be routed to different underlying models (e.g. a fast model for Planning, a higher-reasoning model for Security/Architecture, a cost-efficient model for Documentation), but this mapping is internal backend configuration owned entirely by `llm.service`. It is not exposed to the frontend, not user-selectable, and specific model names are treated as an implementation detail rather than something the rest of the architecture, docs, or code should depend on.
+**Vendor-agnostic documentation rule:** the rest of the documentation set should describe this layer as "the LLM gateway" or "`llm.service`" rather than naming Puter repeatedly — Puter is mentioned specifically only where the LLM communication layer itself is being discussed (this file and ARCHITECTURE.md §8).
+**Unaffected by this decision:** the user-facing workflow (URL entry → validation → metadata fetch → Planning Agent → summary → agent selection → execution → streaming → export), the RepositoryContext/Context Engine, the Agent Orchestrator, the Result Aggregator, session management, and export all remain exactly as previously documented.
 
 ---
 

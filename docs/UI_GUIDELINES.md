@@ -47,7 +47,6 @@ Dark mode is not required for v1 but tokens above should be CSS variables so it 
 ### 5.3 Agent Selection (Recommendation Checklist)
 - One row per selectable agent (the 6 — Planning already ran and isn't shown as a checkbox).
 - Each row: checkbox (pre-checked if `recommended: true`), agent name, one-line reason from the Planning Agent, estimated token cost badge.
-- Provider selector (Claude / OpenAI / Gemini) — single choice, applies to the whole run.
 - "Run Selected Agents" primary button.
 
 ### 5.4 Agent Progress Panel

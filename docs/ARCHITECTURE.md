@@ -38,8 +38,8 @@
 │                                        └──────────────┬─────────────┘│
 │                                                        ▼             │
 │                                        ┌───────────────────────────┐│
-│                                        │  LLM Provider Abstraction   ││
-│                                        │  Claude / OpenAI / Gemini   ││
+│                                        │      llm.service            ││
+│                                        │   (LLM Gateway via Puter)   ││
 │                                        └───────────────────────────┘│
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -55,7 +55,8 @@ backend/
 │   ├── services/
 │   │   ├── github.service.js         # GitHub REST client (server PAT)
 │   │   ├── session.service.js        # in-memory session store (RepositoryContext)
-│   │   └── export.service.js         # PDF/Markdown generation
+│   │   ├── export.service.js         # PDF/Markdown generation
+│   │   └── llm.service.js            # single LLM gateway — the only module that talks to Puter
 │   ├── context/
 │   │   ├── repositoryContext.js      # shape + factory for shared context object
 │   │   └── contextBuilders/          # one file per agent, builds agent-specific slice
@@ -70,11 +71,6 @@ backend/
 │   ├── orchestrator/
 │   │   ├── orchestrator.js           # sequencing, dependency handling, SSE emission
 │   │   └── resultAggregator.js       # merges structured agent outputs into one report
-│   ├── providers/
-│   │   ├── providerInterface.js      # common call(prompt, schema, opts) contract
-│   │   ├── claudeProvider.js
-│   │   ├── openaiProvider.js
-│   │   └── geminiProvider.js
 │   ├── middleware/
 │   │   ├── errorHandler.js
 │   │   └── validateRepoUrl.js
@@ -129,7 +125,7 @@ No agent receives the entire repository's raw content in its prompt. See CONTEXT
 Responsibilities:
 - Runs the Planning Agent (Repository Analysis) first, always, unconditionally.
 - Accepts the user's selected agent list.
-- Runs independent agents (Code Review, Security, Performance, Architecture, Documentation) with as much concurrency as the chosen LLM provider(s) and rate limits allow.
+- Runs independent agents (Code Review, Security, Performance, Architecture, Documentation) with as much concurrency as the LLM gateway and rate limits allow.
 - Holds back the Improvement Roadmap Creation agent until all other selected agents have completed (it depends on their outputs — see AGENT_WORKFLOW.md).
 - Emits SSE events at each state transition (agent-start, agent-complete, agent-error, all-complete).
 - On an individual agent failure: emits `agent-error` for that agent only, continues the rest of the run, does not fail the whole session.
@@ -141,11 +137,13 @@ Responsibilities:
 - Feeds the merged (non-roadmap) outputs into the Roadmap agent's context builder when Roadmap is selected.
 - Produces the final report object consumed by both the Report View (UI) and the Export service.
 
-## 8. LLM Provider Abstraction
+## 8. LLM Gateway (llm.service)
 
-- A common interface (`providerInterface.js`) all three providers implement: given a prompt + expected JSON schema + options, return a parsed, validated structured result.
-- Provider selection is user-selectable (per the multi-provider decision in DECISIONS.md) — the frontend lets the user choose Claude, OpenAI, or Gemini as the active provider for a run; a single provider is used for all agents in a given run (see DECISIONS.md for why, and TASKS.md if per-agent provider selection is added later).
-- Each provider adapter handles its own auth, request formatting, and response parsing, normalizing to the same internal result shape so the orchestrator and aggregator never need to know which provider ran.
+- The application uses a single LLM gateway, implemented via Puter. `llm.service.js` is the **only** module in the entire codebase that communicates with Puter — no agent, controller, or route ever calls it directly.
+- The call chain is always: `Agent → llm.service → Puter → configured AI model`.
+- `llm.service` exposes one common function to agents: given a prompt + expected JSON schema + options, return a parsed, validated structured result. Agents don't know or care which model answered.
+- Different agents may be routed to different underlying models (e.g. a fast model for the Planning Agent, a higher-reasoning model for Security or Architecture, a cost-efficient model for Documentation). This agent-to-model mapping is owned entirely by `llm.service` as internal backend configuration — it is not exposed to the frontend, not user-selectable, and specific model names are treated as an implementation detail rather than something the rest of the architecture depends on.
+- There is no provider selection, no user-provided API keys, and no per-run provider choice anywhere in the system — see DECISIONS.md.
 
 ## 9. GitHub Client
 

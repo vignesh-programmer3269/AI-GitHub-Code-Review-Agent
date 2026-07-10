@@ -11,9 +11,9 @@ Step 2  Backend: POST /api/repo/analyze
           → return: sessionId, repo summary, recommended agents + token estimate per agent
 Step 3  Frontend: show recommendations to user (checklist, pre-checked per recommendation,
           token estimate shown per agent, user can toggle any agent on/off)
-Step 4  Frontend: POST /api/repo/:sessionId/run-agents with the user's final selection + chosen LLM provider
+Step 4  Frontend: POST /api/repo/:sessionId/run-agents with the user's final agent selection
 Step 5  Backend: for each selected non-Roadmap agent, build agent-specific context (Context Builder)
-          and call the LLM provider; run independent agents concurrently
+          and call the LLM gateway (llm.service); run independent agents concurrently
 Step 6  Backend: stream agent-start / agent-complete / agent-error events over SSE as each finishes
 Step 7  Backend: once all non-Roadmap selected agents are done, if Roadmap was selected,
           build its context from the Result Aggregator's merged output and run it last
@@ -177,5 +177,5 @@ Step 10 Frontend: user triggers export (PDF or Markdown) via /api/repo/:sessionI
 ## 4. Failure Handling
 
 - A single agent's failure (LLM error, malformed response failing schema validation, timeout) emits `agent-error` for that agent only.
-- The orchestrator retries a failed agent call once automatically (same provider) before marking it as errored — see DECISIONS.md for retry policy specifics.
+- The orchestrator retries a failed agent call once automatically (via `llm.service`) before marking it as errored — see DECISIONS.md for retry policy specifics.
 - Session-level failure (e.g. GitHub repo not found, GitHub rate limit exhausted) fails fast at Step 2, before any agent runs, with a clear error returned to the frontend.
