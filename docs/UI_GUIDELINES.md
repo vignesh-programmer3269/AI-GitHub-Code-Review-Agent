@@ -55,7 +55,7 @@ Dark mode is not required for v1 but tokens above should be CSS variables so it 
 - Use an `aria-live="polite"` region so status changes are announced for screen readers.
 
 ### 5.5 Report View
-- Tabbed layout, one tab per agent that ran, in this order: Code Review, Security, Performance, Architecture, Documentation, Roadmap.
+- Tabbed layout, one tab per agent that ran, in this order: Code Review, Security, Performance, Architecture, Documentation, Improvement Roadmap.
 - Each tab renders that agent's structured result as formatted content (markdown-rendered where the schema has free text, syntax-highlighted for any code snippets/file references).
 - Findings lists use severity-colored left-border or badge (`--success` / `--warning` / `--danger`) matching severity/risk fields in the schemas (see AGENT_WORKFLOW.md).
 - **Security tab must always render the `disclaimer` field visibly** (not buried) — this is a heuristic/LLM review, not a certified security scan.

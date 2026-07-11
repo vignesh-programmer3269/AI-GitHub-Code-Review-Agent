@@ -28,12 +28,12 @@
 ## 4. Naming Conventions
 
 - Files: `camelCase.js` for backend modules, `PascalCase.jsx` for React components, `camelCase.js` for hooks/services/utils.
-- Agent IDs are the canonical short strings used everywhere (backend, API, frontend): `planning`, `codeReview`, `security`, `performance`, `architecture`, `documentation`, `roadmap`. These exact strings must match across API_SPEC.md, AGENT_WORKFLOW.md, and all code — no aliasing.
-- JSON schema names match AGENT_WORKFLOW.md exactly (`RepositoryAnalysisResult`, `CodeReviewResult`, `SecurityAssessmentResult`, `PerformanceResult`, `ArchitectureResult`, `DocumentationResult`, `RoadmapResult`).
+- Agent IDs are the canonical short strings used everywhere (backend, API, frontend): `planning`, `codeReview`, `security`, `performance`, `architecture`, `documentation`, `improvementRoadmap`. These exact strings must match across API_SPEC.md, AGENT_WORKFLOW.md, and all code — no aliasing.
+- JSON schema names match AGENT_WORKFLOW.md exactly (`RepositoryAnalysisResult`, `CodeReviewResult`, `SecurityAssessmentResult`, `PerformanceResult`, `ArchitectureResult`, `DocumentationResult`, `ImprovementRoadmapResult`).
 
 ## 5. Testing Expectations
 
-- Unit tests (Jest) required for: each Context Builder (given a mock `RepositoryContext`, does it select the right files and stay under budget?), the Result Aggregator (does it merge correctly and pass the right subset to Roadmap?), and the exclusion/filtering logic in the Context Engine.
+- Unit tests (Jest) required for: each Context Builder (given a mock `RepositoryContext`, does it select the right files and stay under budget?), the Result Aggregator (does it merge correctly and pass the right subset to Improvement Roadmap?), and the exclusion/filtering logic in the Context Engine.
 - At least one integration-style smoke test per API endpoint in API_SPEC.md (can mock the `llm.service` calls).
 - `llm.service` should be tested against a mocked HTTP layer (mocked Puter responses), not live API calls, in CI.
 

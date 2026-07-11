@@ -33,9 +33,9 @@ Ordered build phases. Each phase should be completable and demoable before movin
 - [ ] Unit tests per builder per CODING_STANDARDS.md §5.
 
 ## Phase 6 — Orchestrator + Result Aggregator
-- [ ] Implement `orchestrator.js`: runs selected independent agents concurrently, holds Roadmap until dependencies complete, per AGENT_WORKFLOW.md §3.
-- [ ] Implement `resultAggregator.js`: merges outputs, builds Roadmap's context input, per AGENT_WORKFLOW.md §2.7.
-- [ ] Implement the Roadmap agent + context builder (no repo files, aggregator output only).
+- [ ] Implement `orchestrator.js`: runs selected independent agents concurrently, holds Improvement Roadmap until dependencies complete, per AGENT_WORKFLOW.md §3.
+- [ ] Implement `resultAggregator.js`: merges outputs, builds Improvement Roadmap's context input, per AGENT_WORKFLOW.md §2.7.
+- [ ] Implement the Improvement Roadmap agent + context builder (no repo files, aggregator output only).
 - [ ] Implement failure handling / single-retry policy per AGENT_WORKFLOW.md §4.
 
 ## Phase 7 — SSE Streaming Layer
@@ -63,7 +63,7 @@ Ordered build phases. Each phase should be completable and demoable before movin
 - [ ] `ExportBar` component + `POST /api/repo/:sessionId/export` wiring, including the expired-session error path.
 
 ## Phase 12 — Polish & Edge Cases
-- [ ] Handle: repo too large (`REPO_TOO_LARGE`), GitHub rate limit exhausted, empty repo, repo with no README, user selecting only Roadmap (zero-other-agents edge case per AGENT_WORKFLOW.md §2.7).
+- [ ] Handle: repo too large (`REPO_TOO_LARGE`), GitHub rate limit exhausted, empty repo, repo with no README, user selecting only Improvement Roadmap (zero-other-agents edge case per AGENT_WORKFLOW.md §2.7).
 - [ ] Session expiry mid-flow (during agent run, during export) — clear frontend messaging.
 - [ ] Accessibility pass per UI_GUIDELINES.md §6.
 
