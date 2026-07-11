@@ -65,7 +65,8 @@ Kicks off the selected specialized agents.
 **Request:**
 ```json
 {
-  "selectedAgents": ["codeReview", "security", "performance", "architecture", "documentation", "roadmap"]
+  "repoUrl": "https://github.com/expressjs/cors",
+  "selectedAgents": ["codeReview", "security", "performance", "architecture", "documentation", "improvementRoadmap"]
 }
 ```
 **Response 202 (Accepted):**
@@ -114,7 +115,7 @@ Returns the current aggregated report (can be called mid-run for partial results
     "performance": "PerformanceResult | null",
     "architecture": "ArchitectureResult | null",
     "documentation": "DocumentationResult | null",
-    "roadmap": "RoadmapResult | null"
+    "improvementRoadmap": "ImprovementRoadmapResult | null"
   },
   "status": {
     "codeReview": "not_run | running | complete | error",
@@ -122,7 +123,7 @@ Returns the current aggregated report (can be called mid-run for partial results
     "performance": "not_run | running | complete | error",
     "architecture": "not_run | running | complete | error",
     "documentation": "not_run | running | complete | error",
-    "roadmap": "not_run | running | complete | error"
+    "improvementRoadmap": "not_run | running | complete | error"
   }
 }
 ```

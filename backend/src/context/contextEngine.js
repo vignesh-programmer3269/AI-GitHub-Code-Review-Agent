@@ -84,7 +84,24 @@ class ContextEngine {
       readme,
     });
 
-    sessionService.create(sessionId, context);
+    const now = new Date().toISOString();
+    const analysisSession = {
+      sessionId,
+      repositoryContext: context,
+      agentResults: {
+        planning: null,
+        security: null,
+        performance: null,
+        architecture: null,
+        documentation: null,
+        improvementRoadmap: null,
+        codeReview: null
+      },
+      createdAt: now,
+      lastAccessedAt: now
+    };
+
+    sessionService.create(sessionId, analysisSession);
     return sessionId;
   }
 
@@ -102,6 +119,14 @@ class ContextEngine {
       this.touchContext(sessionId);
     }
     return updated;
+  }
+
+  updateAgentResult(sessionId, agentName, result) {
+    const session = this.getContext(sessionId);
+    if (session) {
+      session.agentResults[agentName] = result;
+      this.updateContext(sessionId, { agentResults: session.agentResults });
+    }
   }
 
   deleteContext(sessionId) {

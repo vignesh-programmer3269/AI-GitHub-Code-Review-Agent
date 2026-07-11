@@ -66,8 +66,8 @@ backend/
 │   │   ├── securityAgent.js
 │   │   ├── performanceAgent.js
 │   │   ├── architectureAgent.js
-│   │   ├── documentationAgent.js
-│   │   └── roadmapAgent.js           # depends on other agents' outputs
+│   │   ├── documentationAgent.js     # code -> docs mapping
+│   │   └── improvementRoadmapAgent.js           # depends on other agents' outputs
 │   ├── orchestrator/
 │   │   ├── orchestrator.js           # sequencing, dependency handling, SSE emission
 │   │   └── resultAggregator.js       # merges structured agent outputs into one report
@@ -125,17 +125,16 @@ No agent receives the entire repository's raw content in its prompt. See CONTEXT
 Responsibilities:
 - Runs the Planning Agent (Repository Analysis) first, always, unconditionally.
 - Accepts the user's selected agent list.
-- Runs independent agents (Code Review, Security, Performance, Architecture, Documentation) with as much concurrency as the LLM gateway and rate limits allow.
+- Runs independent agents (Code Review, Security, Performance, Architecture, Documentation) with as much concurrency as the LLM gateway- Ensures contextual budgets are respected.
 - Holds back the Improvement Roadmap Creation agent until all other selected agents have completed (it depends on their outputs — see AGENT_WORKFLOW.md).
-- Emits SSE events at each state transition (agent-start, agent-complete, agent-error, all-complete).
+- Updates the `agentResults` object in `ContextEngine` as each agent completes., agent-error, all-complete).
 - On an individual agent failure: emits `agent-error` for that agent only, continues the rest of the run, does not fail the whole session.
 
 ## 7. Result Aggregator
 
-- Collects each agent's structured JSON output (validated against that agent's schema).
-- Merges them into a single report object keyed by agent id.
-- Feeds the merged (non-roadmap) outputs into the Roadmap agent's context builder when Roadmap is selected.
-- Produces the final report object consumed by both the Report View (UI) and the Export service.
+- Collects each agent's- Converts the raw JSON outputs of the Code Review, Security, Performance, Architecture, and Documentation agents into a concise, unified text summary.
+- Feeds the merged (non-roadmap) outputs into the Improvement Roadmap agent's context builder when Improvement Roadmap is selected.
+- Lives in `backend/src/agents/orchestration/resultAggregator.js`.t object consumed by both the Report View (UI) and the Export service.
 
 ## 8. LLM Gateway (llm.service)
 
@@ -163,8 +162,7 @@ Responsibilities:
 - Two formats: Markdown (direct serialization of the report object) and PDF (rendered from the same Markdown/report data).
 - Since there's no persistence, export must happen within the active session's TTL window.
 
-## 12. What This Architecture Explicitly Avoids
+## 12. What This Architecture Explicitly  - If `ContextEngine` doesn't have the files for a specific context slice yet, the Context Builder for that agent initiates the fetch via `github.service` and populates the engine.
+- No agent has hidden/implicit access to another agent's raw context — anything the Improvement Roadmap agent needs from other agents comes through the Result Aggregator, explicitly.
 
-- No raw full-repository content is ever sent in a single LLM call.
-- No agent has hidden/implicit access to another agent's raw context — anything the Roadmap agent needs from other agents comes through the Result Aggregator, explicitly.
-- No user data is written to disk or a database.
+### Shared Error Codesata is written to disk or a database.

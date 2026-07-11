@@ -1,6 +1,7 @@
 import { StatusCodes } from "http-status-codes";
 import { z, ZodError } from "zod";
 import { contextEngine } from "../context/contextEngine.js";
+import { planningAgent } from "../agents/planning/planningAgent.js";
 import { HttpError } from "../utils/HttpError.js";
 
 const analyzeSchema = z.object({
@@ -13,10 +14,9 @@ export const analyzeRepo = async (req, res, next) => {
     
     const sessionId = await contextEngine.initializeRepository(repoUrl);
     
-    res.status(StatusCodes.OK).json({
-      sessionId,
-      repoSummary: null // Planning Agent is out of scope for this milestone
-    });
+    const result = await planningAgent.run(sessionId);
+    
+    res.status(StatusCodes.OK).json(result);
   } catch (err) {
     if (err instanceof ZodError) {
       return next(new HttpError(StatusCodes.BAD_REQUEST, "VALIDATION_ERROR", "Invalid request payload."));

@@ -20,7 +20,9 @@ This file is the entry point for any LLM/AI coding assistant building or extendi
 - **Do not add authentication, user accounts, or a database.** These were explicitly ruled out (see `PROJECT_CONTEXT.md` §8, `DECISIONS.md` D-002/D-003). If a future request seems to imply one of these, flag it rather than silently adding it.
 - **Do not send full raw repository content in any single LLM call.** Every agent's context must come from its Context Builder in `CONTEXT_ENGINE.md` §4, respecting the exclusion list and token budgets in §6.
 - **Do not skip the Planning Agent.** It always runs first and is not user-selectable (see `AGENT_WORKFLOW.md` §2.1, `DECISIONS.md` D-007).
-- **Do not run the Roadmap agent early.** It must wait for all other selected agents to reach a terminal state (see `AGENT_WORKFLOW.md` §2.7 and §3).
+- **Do not bypass the backend orchestrator.** The UI must only trigger analysis via `POST /api/repo/analyze`.
+- **Do not run the Improvement Roadmap agent early.** It must wait for all other selected agents to reach a terminal state (see `AGENT_WORKFLOW.md` §2.7 and §3).
+- **No polling.** Use the SSE endpoint (`/stream`) for UI progress updates.
 - **Do not invent new numeric limits or retry policies on the fly.** Use the defaults in `CONTEXT_ENGINE.md` §6 and `DECISIONS.md` D-009/D-011 unless a new decision entry overrides them.
 - **Every agent's LLM response must be schema-validated** against the exact schema in `AGENT_WORKFLOW.md` §2 before being accepted, stored, or streamed to the client.
 - **Every JSON schema and agent ID must match exactly** across all docs and all code (see `CODING_STANDARDS.md` §4 for the canonical ID list).

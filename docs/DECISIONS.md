@@ -38,10 +38,10 @@ Architecture Decision Record log. Every decision below is either **CONFIRMED** (
 **Decision:** Interpreted "Repository Analysis" as the mandatory, always-runs-first planning agent (matches the original requirement that the app "plans before execution, analyzing the repository first"), and the other six as the user-selectable specialized set.
 **Why flagged:** The seven agents were listed as a flat list without specifying which one is the planning step. This interpretation was the most consistent one with the earlier stated requirement ("analyzing the repository first and then executing specialized analysis agents") and with there needing to be a recommendation-generating step before user selection. If Repository Analysis was instead meant to be a user-selectable seventh option (with some other mechanism generating recommendations), this needs correcting.
 
-### D-008 — Roadmap Agent Dependency Ordering
+### D-008 — Improvement Roadmap Agent Dependency Ordering
 **Status:** ASSUMED — please confirm
 **Decision:** Improvement Roadmap Creation runs last, after all other selected agents complete, using their aggregated outputs as its only input (no raw repo files).
-**Why flagged:** Not explicitly stated, but implied by "Improvement Roadmap Creation" being a synthesis-style deliverable. Edge case also assumed: if a user selects only Roadmap and nothing else, Roadmap falls back to using the Planning Agent's summary as minimal input rather than failing outright.
+**Why flagged:** Not explicitly stated, but implied by "Improvement Roadmap Creation" being a synthesis-style deliverable. Edge case also assumed: if a user selects only Improvement Roadmap and nothing else, Improvement Roadmap falls back to using the Planning Agent's summary as minimal input rather than failing outright.
 
 ### D-009 — Numeric Defaults (session TTL, file size caps, token budgets)
 **Status:** ASSUMED — please confirm or override
