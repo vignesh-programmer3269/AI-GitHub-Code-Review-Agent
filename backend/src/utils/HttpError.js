@@ -1,4 +1,3 @@
-// backend/src/utils/HttpError.js
 export class HttpError extends Error {
   /**
    * @param {number} statusCode - HTTP status code to return

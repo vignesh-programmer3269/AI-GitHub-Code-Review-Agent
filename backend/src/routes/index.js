@@ -1,8 +1,8 @@
-// backend/src/routes/index.js
 import { Router } from "express";
 import healthRoutes from "./health.routes.js";
 import validationRoutes from "./validation.routes.js";
 import llmRoutes from "./llm.routes.js";
+import analyzeRoutes from "./analyze.routes.js";
 
 const router = Router();
 
@@ -10,5 +10,6 @@ const router = Router();
 router.use(healthRoutes);
 router.use(validationRoutes);
 router.use(llmRoutes);
+router.use(analyzeRoutes);
 
 export default router;
