@@ -1,4 +1,3 @@
-// backend/src/middleware/notFound.js
 import { HttpError } from "../utils/HttpError.js";
 import { StatusCodes } from "http-status-codes";
 

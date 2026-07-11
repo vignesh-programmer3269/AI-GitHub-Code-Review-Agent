@@ -1,4 +1,3 @@
-// backend/src/routes/health.routes.js
 import { Router } from "express";
 import { getHealth } from "../controllers/health.controller.js";
 

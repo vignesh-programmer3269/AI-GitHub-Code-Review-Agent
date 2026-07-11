@@ -1,4 +1,3 @@
-// backend/src/middleware/errorHandler.js
 import { StatusCodes } from "http-status-codes";
 
 /**

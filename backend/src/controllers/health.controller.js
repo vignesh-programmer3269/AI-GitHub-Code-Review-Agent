@@ -1,4 +1,3 @@
-// backend/src/controllers/health.controller.js
 import { StatusCodes } from "http-status-codes";
 
 export const getHealth = (req, res) => {
