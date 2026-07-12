@@ -39,16 +39,60 @@ class PlanningAgent {
     // 4. Validate Output
     const validatedResult = validatePlanningResponse(llmResponse.content);
 
-    // 5. Store inside Session
+    // 5. Inject exact statistics from RepositoryContext to prevent LLM hallucinations
+    const fileCount = session.repositoryContext.fileTree
+      ? session.repositoryContext.fileTree.filter((f) => f.type === "blob").length
+      : Object.keys(session.repositoryContext.fileHashes || {}).length;
+    
+    const folderCount = session.repositoryContext.fileTree
+      ? session.repositoryContext.fileTree.filter((f) => f.type === "tree").length
+      : 0;
+
+    validatedResult.repositoryName = session.repositoryContext.repo;
+    validatedResult.repositoryOwner = session.repositoryContext.owner;
+    
+    validatedResult.repositoryStats = {
+      files: fileCount,
+      folders: folderCount,
+      languages: session.repositoryContext.metadata.languages || [],
+      repositorySize: session.repositoryContext.metadata.sizeKb || 0,
+      defaultBranch: session.repositoryContext.defaultBranch || "main",
+    };
+
+    // Calculate totals for recommended analyses
+    let estimatedTotalTime = 0;
+    let estimatedTotalTokens = 0;
+    
+    if (Array.isArray(validatedResult.recommendedAnalyses)) {
+      validatedResult.recommendedAnalyses.forEach(agent => {
+        if (agent.selectedByDefault) {
+          estimatedTotalTokens += (agent.estimatedTokens || 0);
+          
+          // Parse "2 min", "30 sec" etc into seconds roughly for the total, or just store a raw number.
+          // Since the prompt asks for "estimatedDuration: string", we will just let it be strings per agent,
+          // but we can let the LLM return seconds on the backend and we format on frontend, or just sum it up if we require integers.
+          // The prompt currently asks for estimatedDuration as string. Let's just pass 0 for estimatedTotalTime here and let frontend handle or we parse it.
+          // Actually, let's keep it simple and just do a naive parse of minutes if we can, otherwise 0.
+          if (agent.estimatedDuration && agent.estimatedDuration.includes("min")) {
+            estimatedTotalTime += parseInt(agent.estimatedDuration) * 60;
+          } else if (agent.estimatedDuration && agent.estimatedDuration.includes("sec")) {
+            estimatedTotalTime += parseInt(agent.estimatedDuration);
+          }
+        }
+      });
+    }
+
+    validatedResult.estimatedTotalTime = estimatedTotalTime;
+    validatedResult.estimatedTotalTokens = estimatedTotalTokens;
+
+    // 6. Store inside Session
     contextEngine.updateAgentResult(sessionId, "planning", validatedResult);
 
-    // 6. Return standard format for the controller
+    // 7. Return standard format for the controller
     return {
       success: true,
       sessionId,
-      repositorySummary: validatedResult,
-      recommendedAgents: validatedResult.recommendedAgents,
-      estimatedAnalysisTime: validatedResult.estimatedAnalysisTime,
+      planning: validatedResult
     };
   }
 }

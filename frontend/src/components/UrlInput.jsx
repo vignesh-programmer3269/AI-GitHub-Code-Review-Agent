@@ -42,11 +42,15 @@ export default function UrlInput() {
     try {
       // Clean up URL (remove trailing slash if any)
       const cleanUrl = data.url.replace(/\/$/, "");
-      const response = await repoService.validate(cleanUrl);
+      const response = await repoService.analyze(cleanUrl);
 
-      toast.success("Repository verified!");
-      navigate("/dashboard", {
-        state: { repoUrl: cleanUrl, repoData: response },
+      toast.success("Repository analyzed!");
+      navigate("/planning", {
+        state: { 
+          repoUrl: cleanUrl, 
+          sessionId: response.sessionId,
+          planning: response.planning 
+        },
       });
     } catch (error) {
       console.error(error);
