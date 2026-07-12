@@ -2,12 +2,14 @@ import { Routes, Route } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
+import Planning from "./pages/Planning";
 
 function App() {
   return (
     <>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/planning" element={<Planning />} />
         <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
 

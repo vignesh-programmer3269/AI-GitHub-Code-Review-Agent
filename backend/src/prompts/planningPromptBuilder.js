@@ -13,9 +13,8 @@ You must:
 1. Understand the repository's main purpose.
 2. Identify the core technology stack, programming languages, and frameworks.
 3. Determine the architectural style and overall complexity.
-4. Recommend which specialized agents should be executed (e.g., codeReview, security, performance, architecture, documentation, improvementRoadmap) based on the project's nature.
-5. Determine the priority of these analyses.
-6. Provide a rough estimate of token usage and analysis time (for informational purposes).
+4. Recommend which specialized agents should be executed based on the project's nature.
+5. Provide a health score and detailed technology stack breakdown.
 
 You must respond EXCLUSIVELY in valid JSON that strictly matches the expected schema. Do not include markdown formatting or extra text outside of the JSON block.`;
 
@@ -26,81 +25,83 @@ ${JSON.stringify(planningContext, null, 2)}`;
   const expectedSchema = {
     type: "object",
     properties: {
-      summary: {
+      repositoryName: { type: "string" },
+      repositoryOwner: { type: "string" },
+      repositoryType: {
         type: "string",
-        description: "A brief 2-3 sentence summary of the project's purpose.",
+        enum: [
+          "Frontend", "Backend", "Full Stack", "CLI", "Library", "Package",
+          "Microservice", "AI Application", "AI Agent", "Browser Extension",
+          "Mobile App", "Desktop App", "Script", "Framework", "SDK", "Other"
+        ]
       },
-      projectType: {
+      repositorySummary: {
         type: "string",
-        description:
-          "The type of project (e.g., 'Web Application', 'Library', 'CLI Tool', 'API').",
+        description: "2-4 concise paragraphs explaining what the repository does, its purpose, and major functionality."
       },
-      techStack: {
-        type: "array",
-        items: { type: "string" },
-        description:
-          "List of primary programming languages and core technologies.",
-      },
-      frameworks: {
-        type: "array",
-        items: { type: "string" },
-        description:
-          "List of detected frameworks (e.g., 'React', 'Express', 'Django', 'Spring Boot').",
-      },
-      architectureStyle: {
+      architectureSummary: {
         type: "string",
-        description:
-          "The detected architectural style (e.g., 'Monolith', 'Microservices', 'Serverless').",
+        description: "Describe the architecture style, folder organization, project organization, and overall design."
       },
       complexity: {
         type: "string",
-        enum: ["low", "medium", "high"],
-        description:
-          "Estimated complexity of the repository based on folder structure and tech stack.",
+        enum: ["Simple", "Moderate", "Complex", "Enterprise"]
       },
-      recommendedAgents: {
+      repositoryHealth: {
+        type: "object",
+        properties: {
+          score: { type: "number", description: "0-100" },
+          reason: { type: "string" }
+        },
+        required: ["score", "reason"]
+      },
+      technologyStack: {
+        type: "object",
+        properties: {
+          frontend: { type: "array", items: { type: "string" } },
+          backend: { type: "array", items: { type: "string" } },
+          database: { type: "array", items: { type: "string" } },
+          frameworks: { type: "array", items: { type: "string" } },
+          libraries: { type: "array", items: { type: "string" } },
+          runtime: { type: "array", items: { type: "string" } },
+          packageManager: { type: "array", items: { type: "string" } },
+          buildTool: { type: "array", items: { type: "string" } },
+          deployment: { type: "array", items: { type: "string" } },
+          ciCd: { type: "array", items: { type: "string" } },
+          containerization: { type: "array", items: { type: "string" } }
+        },
+        required: [
+          "frontend", "backend", "database", "frameworks", "libraries", 
+          "runtime", "packageManager", "buildTool", "deployment", "ciCd", "containerization"
+        ]
+      },
+      recommendedAnalyses: {
         type: "array",
         items: {
-          type: "string",
-          enum: [
-            "codeReview",
-            "security",
-            "performance",
-            "architecture",
-            "documentation",
-            "improvementRoadmap",
-          ],
-        },
-        description:
-          "Which specialized agents are highly recommended for this repository.",
-      },
-      analysisPriority: {
-        type: "string",
-        description:
-          "A short sentence explaining which area should be prioritized during code review.",
-      },
-      estimatedTokenUsage: {
-        type: "number",
-        description:
-          "A rough integer estimate of how many tokens a full review might consume (e.g., 50000).",
-      },
-      estimatedAnalysisTime: {
-        type: "number",
-        description:
-          "A rough integer estimate in seconds for the full analysis pipeline.",
-      },
+          type: "object",
+          properties: {
+            agentId: {
+              type: "string",
+              enum: ["codeReview", "security", "performance", "architecture", "documentation", "improvementRoadmap"]
+            },
+            agentName: { type: "string" },
+            priority: { type: "string", enum: ["Critical", "High", "Medium", "Low"] },
+            selectedByDefault: { type: "boolean" },
+            estimatedDuration: { type: "string" },
+            estimatedTokens: { type: "number" },
+            description: { type: "string" }
+          },
+          required: [
+            "agentId", "agentName", "priority", "selectedByDefault", 
+            "estimatedDuration", "estimatedTokens", "description"
+          ]
+        }
+      }
     },
     required: [
-      "summary",
-      "projectType",
-      "techStack",
-      "frameworks",
-      "architectureStyle",
-      "complexity",
-      "recommendedAgents",
-      "analysisPriority",
-      "estimatedTokenUsage",
-      "estimatedAnalysisTime",
+      "repositoryName", "repositoryOwner", "repositoryType", 
+      "repositorySummary", "architectureSummary", "complexity", 
+      "repositoryHealth", "technologyStack", "recommendedAnalyses"
     ],
     additionalProperties: false,
   };

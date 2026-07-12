@@ -13,6 +13,10 @@ export const repoService = {
     const response = await api.post("/repo/validate", { repoUrl: url });
     return response.data;
   },
+  analyze: async (url) => {
+    const response = await api.post("/repo/analyze", { repoUrl: url });
+    return response.data;
+  }
 };
 
 export const llmService = {
