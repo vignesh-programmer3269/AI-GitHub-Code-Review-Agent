@@ -3,12 +3,12 @@
  * This is not exposed to the frontend or to the agents themselves.
  */
 export const agentModelConfig = {
-  planning: "openai/gpt-5.6-sol",
-  security: "anthropic/claude-opus-4-8",
-  performance: "openai/gpt-5.6-sol-pro",
-  architecture: "openai/gpt-5.6-sol-pro",
-  documentation: "openai/gpt-5.5",
-  codeReview: "anthropic/claude-fable-5",
-  improvementRoadmap: "openai/gpt-5.6-sol-pro",
-  default: "openai/gpt-5.6-sol-pro",
+  planning: "nvidia/nemotron-3-ultra-550b-a55b:free",
+  security: "nvidia/nemotron-3-ultra-550b-a55b:free",
+  performance: "nvidia/nemotron-3-ultra-550b-a55b:free",
+  architecture: "nvidia/nemotron-3-ultra-550b-a55b:free",
+  documentation: "nvidia/nemotron-3-ultra-550b-a55b:free",
+  codeReview: "nvidia/nemotron-3-ultra-550b-a55b:free",
+  improvementRoadmap: "nvidia/nemotron-3-ultra-550b-a55b:free",
+  default: "nvidia/nemotron-3-ultra-550b-a55b:free",
 };

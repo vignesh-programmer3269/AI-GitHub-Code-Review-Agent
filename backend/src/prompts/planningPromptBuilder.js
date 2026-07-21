@@ -37,15 +37,19 @@ ${JSON.stringify(planningContext, null, 2)}`;
       },
       repositorySummary: {
         type: "string",
-        description: "2-4 concise paragraphs explaining what the repository does, its purpose, and major functionality."
+        description: "A very concise summary explaining what the repository does, limited to approximately 100 words."
       },
       architectureSummary: {
         type: "string",
-        description: "Describe the architecture style, folder organization, project organization, and overall design."
+        description: "Describe the architecture style, project organization, and overall design concisely in under 100 words."
+      },
+      folderOrganization: {
+        type: "string",
+        description: "Describe how the folders and files are organized concisely in under 100 words."
       },
       complexity: {
         type: "string",
-        enum: ["Simple", "Moderate", "Complex", "Enterprise"]
+        enum: ["Simple", "Moderate", "Medium", "Complex", "Enterprise"]
       },
       repositoryHealth: {
         type: "object",
@@ -89,18 +93,28 @@ ${JSON.stringify(planningContext, null, 2)}`;
             selectedByDefault: { type: "boolean" },
             estimatedDuration: { type: "string" },
             estimatedTokens: { type: "number" },
-            description: { type: "string" }
+            description: { type: "string" },
+            info: {
+              type: "object",
+              properties: {
+                purpose: { type: "string" },
+                analyzes: { type: "string" },
+                typicalOutput: { type: "string" },
+                recommendationReason: { type: "string" }
+              },
+              required: ["purpose", "analyzes", "typicalOutput", "recommendationReason"]
+            }
           },
           required: [
             "agentId", "agentName", "priority", "selectedByDefault", 
-            "estimatedDuration", "estimatedTokens", "description"
+            "estimatedDuration", "estimatedTokens", "description", "info"
           ]
         }
       }
     },
     required: [
       "repositoryName", "repositoryOwner", "repositoryType", 
-      "repositorySummary", "architectureSummary", "complexity", 
+      "repositorySummary", "architectureSummary", "folderOrganization", "complexity", 
       "repositoryHealth", "technologyStack", "recommendedAnalyses"
     ],
     additionalProperties: false,

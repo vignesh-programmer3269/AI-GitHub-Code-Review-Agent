@@ -37,7 +37,7 @@ If you (the building LLM) hit a requirement that isn't covered by these 10 files
 
 ## 4. Build Order
 
-Follow `TASKS.md` phase by phase. Do not build frontend agent-interaction UI (Phase 9+) before the orchestrator (Phase 6) is functional against a working LLM gateway (`llm.service` talking to Puter, per Phase 4). See `TASKS.md`, "Notes on Sequencing".
+Follow `TASKS.md` phase by phase. Do not build frontend agent-interaction UI (Phase 9+) before the orchestrator (Phase 6) is functional against a working LLM gateway (`llm.service` talking to OpenRouter, per Phase 4). See `TASKS.md`, "Notes on Sequencing".
 
 ## 5. Definition of Done (for the project as a whole)
 

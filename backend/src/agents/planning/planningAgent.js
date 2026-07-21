@@ -24,7 +24,7 @@ class PlanningAgent {
 
     // Combine system and user prompt since our llm.service currently takes a single string.
     // In a more advanced implementation, these could be passed as a message array.
-    const combinedPrompt = `${prompts.systemPrompt}\n\n${prompts.userPrompt}`;
+    const combinedPrompt = `${prompts.systemPrompt}\n\nEXPECTED JSON SCHEMA:\n${JSON.stringify(prompts.expectedSchema, null, 2)}\n\n${prompts.userPrompt}`;
 
     // 3. Request LLM
     const llmResponse = await llmService.generateResponse({
@@ -41,11 +41,11 @@ class PlanningAgent {
 
     // 5. Inject exact statistics from RepositoryContext to prevent LLM hallucinations
     const fileCount = session.repositoryContext.fileTree
-      ? session.repositoryContext.fileTree.filter((f) => f.type === "blob").length
+      ? session.repositoryContext.fileTree.filter((f) => f.type === "file").length
       : Object.keys(session.repositoryContext.fileHashes || {}).length;
     
     const folderCount = session.repositoryContext.fileTree
-      ? session.repositoryContext.fileTree.filter((f) => f.type === "tree").length
+      ? session.repositoryContext.fileTree.filter((f) => f.type === "dir").length
       : 0;
 
     validatedResult.repositoryName = session.repositoryContext.repo;

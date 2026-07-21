@@ -1,29 +1,48 @@
 import { z } from "zod";
 import { HttpError } from "../../utils/HttpError.js";
 
+const coerceStringArray = z.preprocess((val) => {
+  if (typeof val === "string") {
+    return val.split(",").map((s) => s.trim()).filter(Boolean);
+  }
+  if (Array.isArray(val)) {
+    return val.map((item) => {
+      if (typeof item === "string") return item;
+      if (typeof item === "object" && item !== null) {
+        const values = Object.values(item);
+        if (values.length > 0 && typeof values[0] === "string") return values[0];
+        return JSON.stringify(item);
+      }
+      return String(item);
+    });
+  }
+  return [];
+}, z.array(z.string()));
+
 const planningSchema = z.object({
-  repositoryName: z.string().default("Unknown Repository"),
-  repositoryOwner: z.string().default("Unknown Owner"),
-  repositoryType: z.string().default("Other"),
-  repositorySummary: z.string().default("No summary provided."),
-  architectureSummary: z.string().default("No architecture summary provided."),
-  complexity: z.enum(["Simple", "Moderate", "Complex", "Enterprise"]).default("Moderate"),
+  repositoryName: z.string(),
+  repositoryOwner: z.string(),
+  repositoryType: z.string(),
+  repositorySummary: z.string(),
+  architectureSummary: z.string(),
+  folderOrganization: z.string(),
+  complexity: z.enum(["Simple", "Moderate", "Medium", "Complex", "Enterprise"]),
   repositoryHealth: z.object({
-    score: z.number().min(0).max(100).default(50),
-    reason: z.string().default("No health reason provided.")
-  }).default({ score: 50, reason: "No health reason provided." }),
+    score: z.number().min(0).max(100),
+    reason: z.string()
+  }),
   technologyStack: z.object({
-    frontend: z.array(z.string()).default([]),
-    backend: z.array(z.string()).default([]),
-    database: z.array(z.string()).default([]),
-    frameworks: z.array(z.string()).default([]),
-    libraries: z.array(z.string()).default([]),
-    runtime: z.array(z.string()).default([]),
-    packageManager: z.array(z.string()).default([]),
-    buildTool: z.array(z.string()).default([]),
-    deployment: z.array(z.string()).default([]),
-    ciCd: z.array(z.string()).default([]),
-    containerization: z.array(z.string()).default([])
+    frontend: coerceStringArray.default([]),
+    backend: coerceStringArray.default([]),
+    database: coerceStringArray.default([]),
+    frameworks: coerceStringArray.default([]),
+    libraries: coerceStringArray.default([]),
+    runtime: coerceStringArray.default([]),
+    packageManager: coerceStringArray.default([]),
+    buildTool: coerceStringArray.default([]),
+    deployment: coerceStringArray.default([]),
+    ciCd: coerceStringArray.default([]),
+    containerization: coerceStringArray.default([])
   }).default({
     frontend: [], backend: [], database: [], frameworks: [], libraries: [],
     runtime: [], packageManager: [], buildTool: [], deployment: [], ciCd: [], containerization: []
@@ -35,7 +54,13 @@ const planningSchema = z.object({
     selectedByDefault: z.boolean(),
     estimatedDuration: z.string(),
     estimatedTokens: z.number().int(),
-    description: z.string()
+    description: z.string(),
+    info: z.object({
+      purpose: z.string(),
+      analyzes: z.string(),
+      typicalOutput: z.string(),
+      recommendationReason: z.string()
+    })
   })).default([])
 });
 
@@ -54,7 +79,8 @@ export const validatePlanningResponse = (rawResponse) => {
   try {
     parsedJson = JSON.parse(jsonString);
   } catch (err) {
-    throw new HttpError(500, "LLM_PARSE_ERROR", "Failed to parse JSON response from LLM.");
+    console.error("RAW JSON STRING FAILED PARSE:", jsonString);
+    throw new HttpError(500, "LLM_PARSE_ERROR", "Failed to parse JSON response from LLM. Raw Output: " + jsonString.substring(0, 500));
   }
 
   // Validate and apply defaults
@@ -65,6 +91,7 @@ export const validatePlanningResponse = (rawResponse) => {
     // Wait, the prompt says "Throwing meaningful validation errors". 
     // We will throw HttpError.
     const errorMessage = result.error.errors.map((e) => `${e.path.join(".")}: ${e.message}`).join(", ");
+    console.error("ZOD VALIDATION FAILED. RAW JSON WAS:", jsonString);
     throw new HttpError(500, "LLM_VALIDATION_ERROR", `LLM response failed schema validation: ${errorMessage}`);
   }
 

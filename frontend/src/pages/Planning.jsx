@@ -5,6 +5,7 @@ import AnimatedBackground from "../components/AnimatedBackground";
 import RepositoryOverviewCard from "../components/planning/RepositoryOverviewCard";
 import RepositorySummaryCard from "../components/planning/RepositorySummaryCard";
 import ArchitectureCard from "../components/planning/ArchitectureCard";
+import FolderOrganizationCard from "../components/planning/FolderOrganizationCard";
 import TechnologyStackCard from "../components/planning/TechnologyStackCard";
 import RepositoryStatsCard from "../components/planning/RepositoryStatsCard";
 import AnalysisPlanCard from "../components/planning/AnalysisPlanCard";
@@ -110,6 +111,7 @@ export default function Planning() {
             <RepositoryOverviewCard planning={planning} />
             <RepositorySummaryCard planning={planning} />
             <ArchitectureCard planning={planning} />
+            <FolderOrganizationCard planning={planning} />
           </div>
 
           {/* Right Column: Stats & Tech */}

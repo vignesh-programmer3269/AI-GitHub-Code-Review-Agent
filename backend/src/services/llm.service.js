@@ -1,4 +1,4 @@
-import { puter } from "@heyputer/puter.js";
+import axios from "axios";
 import { config } from "../config/index.js";
 import { agentModelConfig } from "../config/agentModelConfig.js";
 import {
@@ -9,20 +9,25 @@ import {
 
 class LLMService {
   constructor() {
-    // Puter is imported globally, but we ensure the API key is present in the environment
-    if (!config.puterApiKey) {
+    if (!config.openRouterApiKey) {
       console.warn(
-        "PUTER_API_KEY is not set. Puter may fail in a backend environment without authentication.",
+        "OPENROUTER_API_KEY is not set. OpenRouter calls will fail without authentication.",
       );
-    } else {
-      // Authenticate with the backend API key
-      puter.setAuthToken(config.puterApiKey);
     }
+    
+    this.client = axios.create({
+      baseURL: "https://openrouter.ai/api/v1",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + config.openRouterApiKey,
+        "HTTP-Referer": "http://localhost:8000",
+        "X-Title": "AI GitHub Code Review Agent"
+      }
+    });
   }
 
-
   /**
-   * Generates a response using the Puter LLM Gateway.
+   * Generates a response using the OpenRouter LLM Gateway.
    * @param {Object} params
    * @param {string} params.agent - The name of the agent calling this service
    * @param {string} params.prompt
@@ -32,27 +37,29 @@ class LLMService {
     if (!prompt)
       throw new LLMError(ErrorCodes.UNKNOWN_ERROR, "Prompt is required.");
 
-    const targetModel =
-      agentModelConfig[agent] || agentModelConfig.default;
+    const targetModel = agentModelConfig[agent] || agentModelConfig.default;
 
     try {
-      // Pass the configured model to Puter
-      const res = await puter.ai.chat(prompt, { model: targetModel });
-      const textResponse =
-        res?.message?.content || res?.toString() || JSON.stringify(res);
+      const response = await this.client.post("/chat/completions", {
+        model: targetModel,
+        messages: [{ role: "user", content: prompt }]
+      });
+
+      const data = response.data;
+      const textResponse = data.choices?.[0]?.message?.content || "";
 
       return {
         success: true,
         content: textResponse,
         usage: {
-          inputTokens: res?.usage?.prompt_tokens || 0,
-          outputTokens: res?.usage?.completion_tokens || 0,
+          inputTokens: data.usage?.prompt_tokens || 0,
+          outputTokens: data.usage?.completion_tokens || 0,
         },
-        provider: "Puter",
+        provider: "OpenRouter",
         model: targetModel,
       };
     } catch (error) {
-      throw normalizeProviderError(error, "Puter");
+      throw normalizeProviderError(error, "OpenRouter");
     }
   }
 }

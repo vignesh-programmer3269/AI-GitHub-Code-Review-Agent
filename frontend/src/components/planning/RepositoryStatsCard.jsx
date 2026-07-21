@@ -71,7 +71,7 @@ export default function RepositoryStatsCard({ planning }) {
                 key={i}
                 className="px-2.5 py-1 rounded-md bg-bg-surface border border-border-default text-xs font-medium text-text-secondary"
               >
-                {lang}
+                {typeof lang === 'string' ? lang : `${lang.language} ${typeof lang.percentage === 'number' ? lang.percentage.toFixed(2) : lang.percentage}%`}
               </span>
             ))}
           </div>

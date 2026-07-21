@@ -16,7 +16,7 @@ const schema = z.object({
     .min(1, "GitHub URL is required")
     .regex(
       /^(?:https?:\/\/)?github\.com\/[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+\/?$/,
-      "Must be a valid GitHub repository URL (e.g., https://github.com/owner/repo)"
+      "Must be a valid GitHub repository URL (e.g., https://github.com/owner/repo)",
     ),
 });
 
@@ -38,7 +38,7 @@ export default function UrlInput() {
 
   const onSubmit = async (data) => {
     setIsLoading(true);
-    
+
     try {
       // Clean up URL (remove trailing slash if any)
       const cleanUrl = data.url.replace(/\/$/, "");
@@ -46,10 +46,10 @@ export default function UrlInput() {
 
       toast.success("Repository analyzed!");
       navigate("/planning", {
-        state: { 
-          repoUrl: cleanUrl, 
+        state: {
+          repoUrl: cleanUrl,
           sessionId: response.sessionId,
-          planning: response.planning 
+          planning: response.planning,
         },
       });
     } catch (error) {
@@ -58,7 +58,7 @@ export default function UrlInput() {
         error.response?.data?.error?.message ||
         error.response?.data?.message ||
         "Failed to validate repository. Ensure it is public and exists.";
-      
+
       toast.error(message, {
         icon: "⚠️",
         style: {
@@ -80,7 +80,6 @@ export default function UrlInput() {
       transition={{ duration: 0.5, delay: 0.2 }}
     >
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
-        
         {/* URL Input */}
         <div className="relative w-full h-14">
           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -96,12 +95,12 @@ export default function UrlInput() {
               errors.url
                 ? "border-danger focus:ring-danger/20 focus:border-danger"
                 : "border-border-default focus:ring-accent/20 focus:border-accent hover:border-text-secondary/50",
-              isLoading && "opacity-60 cursor-not-allowed"
+              isLoading && "opacity-60 cursor-not-allowed",
             )}
             autoComplete="off"
             spellCheck="false"
           />
-          
+
           {/* Inline URL Error */}
           <AnimatePresence mode="wait">
             {errors.url && (
@@ -128,7 +127,7 @@ export default function UrlInput() {
               !isValid || !isDirty
                 ? "bg-bg-card text-text-secondary cursor-not-allowed border border-transparent"
                 : "bg-accent text-white hover:bg-accent-hover hover:shadow-[0_0_15px_rgba(99,102,241,0.4)] shadow-md active:scale-95",
-              isLoading && "opacity-90 cursor-not-allowed"
+              isLoading && "opacity-90 cursor-not-allowed",
             )}
           >
             {isLoading ? (

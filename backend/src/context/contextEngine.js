@@ -95,10 +95,10 @@ class ContextEngine {
         architecture: null,
         documentation: null,
         improvementRoadmap: null,
-        codeReview: null
+        codeReview: null,
       },
       createdAt: now,
-      lastAccessedAt: now
+      lastAccessedAt: now,
     };
 
     sessionService.create(sessionId, analysisSession);
