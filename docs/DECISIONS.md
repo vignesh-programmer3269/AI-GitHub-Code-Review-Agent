@@ -8,7 +8,7 @@ Architecture Decision Record log. Every decision below is either **CONFIRMED** (
 **Status:** SUPERSEDED by D-014
 **Decision (original):** Multi-provider — Claude (Anthropic), OpenAI, and Google Gemini — user-selectable at run time.
 **Note:** Provider choice was a single selection applied to the whole run (all agents in that run use the same provider), not per-agent.
-**Superseded because:** the project moved to a single backend-owned LLM gateway (Puter) with no user-facing provider selection at all — see D-014.
+**Superseded because:** the project moved to a single backend-owned LLM gateway (OpenRouter) with no user-facing provider selection at all — see D-014.
 
 ### D-002 — User Authentication
 **Status:** CONFIRMED
@@ -64,12 +64,12 @@ Architecture Decision Record log. Every decision below is either **CONFIRMED** (
 **Status:** ASSUMED — please confirm
 **Decision:** The in-memory session store assumes a single backend process/instance. No shared cache (e.g. Redis) is included, since that would reintroduce external infrastructure the "no database" decision was meant to avoid. If horizontal scaling is needed later, this needs a follow-up decision (likely a shared in-memory store like Redis used purely as a cache, not a database — would need explicit sign-off since it changes the "no external persistence" constraint).
 
-### D-014 — Single LLM Gateway via Puter (supersedes D-001, D-010)
+### D-014 — Single LLM Gateway via OpenRouter (supersedes D-001, D-010)
 **Status:** CONFIRMED
-**Decision:** The application no longer supports multiple, user-selectable LLM providers. All AI communication now goes through a single backend module, `llm.service`, which is the only part of the codebase that talks to Puter. The call chain is always `Agent → llm.service → Puter → configured AI model`.
+**Decision:** The application no longer supports multiple, user-selectable LLM providers. All AI communication now goes through a single backend module, `llm.service`, which is the only part of the codebase that talks to OpenRouter. The call chain is always `Agent → llm.service → OpenRouter → configured AI model`.
 **What was removed:** the Claude/OpenAI/Gemini provider adapters, the shared `providerInterface.js` multi-provider contract, provider selection in the API and UI, model selection by users, and any notion of user-provided API keys or frontend-side key management (including localStorage-based key handling, which was never implemented but is explicitly ruled out going forward).
 **What replaced it:** different agents may still be routed to different underlying models (e.g. a fast model for Planning, a higher-reasoning model for Security/Architecture, a cost-efficient model for Documentation), but this mapping is internal backend configuration owned entirely by `llm.service`. It is not exposed to the frontend, not user-selectable, and specific model names are treated as an implementation detail rather than something the rest of the architecture, docs, or code should depend on.
-**Vendor-agnostic documentation rule:** the rest of the documentation set should describe this layer as "the LLM gateway" or "`llm.service`" rather than naming Puter repeatedly — Puter is mentioned specifically only where the LLM communication layer itself is being discussed (this file and ARCHITECTURE.md §8).
+**Vendor-agnostic documentation rule:** the rest of the documentation set should describe this layer as "the LLM gateway" or "`llm.service`" rather than naming OpenRouter repeatedly — OpenRouter is mentioned specifically only where the LLM communication layer itself is being discussed (this file and ARCHITECTURE.md §8).
 **Unaffected by this decision:** the user-facing workflow (URL entry → validation → metadata fetch → Planning Agent → summary → agent selection → execution → streaming → export), the RepositoryContext/Context Engine, the Agent Orchestrator, the Result Aggregator, session management, and export all remain exactly as previously documented.
 
 ---

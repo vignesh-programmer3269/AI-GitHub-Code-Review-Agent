@@ -39,7 +39,7 @@
 │                                                        ▼             │
 │                                        ┌───────────────────────────┐│
 │                                        │      llm.service            ││
-│                                        │   (LLM Gateway via Puter)   ││
+│                                        │   (LLM Gateway via OpenRouter) ││
 │                                        └───────────────────────────┘│
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -56,7 +56,7 @@ backend/
 │   │   ├── github.service.js         # GitHub REST client (server PAT)
 │   │   ├── session.service.js        # in-memory session store (RepositoryContext)
 │   │   ├── export.service.js         # PDF/Markdown generation
-│   │   └── llm.service.js            # single LLM gateway — the only module that talks to Puter
+│   │   └── llm.service.js            # single LLM gateway — the only module that talks to OpenRouter
 │   ├── context/
 │   │   ├── repositoryContext.js      # shape + factory for shared context object
 │   │   └── contextBuilders/          # one file per agent, builds agent-specific slice
@@ -131,20 +131,6 @@ Responsibilities:
 - On an individual agent failure: emits `agent-error` for that agent only, continues the rest of the run, does not fail the whole session.
 
 ## 7. Result Aggregator
-
-- Collects each agent's- Converts the raw JSON outputs of the Code Review, Security, Performance, Architecture, and Documentation agents into a concise, unified text summary.
-- Feeds the merged (non-roadmap) outputs into the Improvement Roadmap agent's context builder when Improvement Roadmap is selected.
-- Lives in `backend/src/agents/orchestration/resultAggregator.js`.t object consumed by both the Report View (UI) and the Export service.
-
-## 8. LLM Gateway (llm.service)
-
-- The application uses a single LLM gateway, implemented via Puter. `llm.service.js` is the **only** module in the entire codebase that communicates with Puter — no agent, controller, or route ever calls it directly.
-- The call chain is always: `Agent → llm.service → Puter → configured AI model`.
-- `llm.service` exposes one common function to agents: given a prompt + expected JSON schema + options, return a parsed, validated structured result. Agents don't know or care which model answered.
-- Different agents may be routed to different underlying models (e.g. a fast model for the Planning Agent, a higher-reasoning model for Security or Architecture, a cost-efficient model for Documentation). This agent-to-model mapping is owned entirely by `llm.service` as internal backend configuration — it is not exposed to the frontend, not user-selectable, and specific model names are treated as an implementation detail rather than something the rest of the architecture depends on.
-- There is no provider selection, no user-provided API keys, and no per-run provider choice anywhere in the system — see DECISIONS.md.
-
-## 9. GitHub Client
 
 - Single server-side GitHub PAT (env var `GITHUB_PAT`), used for all GitHub REST calls.
 - No end-user GitHub authentication anywhere in this system.

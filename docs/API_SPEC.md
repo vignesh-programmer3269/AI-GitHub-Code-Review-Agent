@@ -157,7 +157,7 @@ NODE_ENV=development
 GITHUB_PAT=
 
 # LLM Gateway — only the backend holds this; frontend has no knowledge of it
-PUTER_API_KEY=
+OPENROUTER_API_KEY=
 
 # Context engine limits (defaults documented in CONTEXT_ENGINE.md §6; overridable here)
 SESSION_TTL_MINUTES=30

@@ -48,8 +48,29 @@ export default function AnalysisInfoDialog({ isOpen, onClose, analysis }) {
                 <h4 className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-1">
                   Purpose
                 </h4>
+                <p className="text-sm text-text-primary leading-relaxed mb-4">
+                  {analysis.info?.purpose || analysis.description}
+                </p>
+
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-1">
+                  What it Analyzes
+                </h4>
+                <p className="text-sm text-text-primary leading-relaxed mb-4">
+                  {analysis.info?.analyzes || "Information not available."}
+                </p>
+
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-1">
+                  Typical Output
+                </h4>
+                <p className="text-sm text-text-primary leading-relaxed mb-4">
+                  {analysis.info?.typicalOutput || "Information not available."}
+                </p>
+
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-1">
+                  Why it was Recommended
+                </h4>
                 <p className="text-sm text-text-primary leading-relaxed">
-                  {analysis.description}
+                  {analysis.info?.recommendationReason || "No specific reason provided."}
                 </p>
               </div>
 

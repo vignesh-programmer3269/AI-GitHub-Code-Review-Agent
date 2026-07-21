@@ -14,7 +14,7 @@
 - **Controllers stay thin:** parse/validate input, call a service, return the response. Business logic lives in `services/`, `agents/`, `orchestrator/`, or `context/` — never in a controller.
 - **Config:** all environment variables loaded once in `config/` via `dotenv`, exported as a typed/validated config object. No `process.env.X` reads scattered through the codebase — always go through `config`.
 - **Logging:** a minimal structured logger (level + message + optional metadata object); no bare `console.log` in service/agent code (a `console.log` is fine only in top-level `server.js` startup banner).
-- **LLM gateway:** `llm.service.js` is the only module permitted to import or call Puter. Agents call `llm.service`, never Puter directly. Agent-to-model routing lives entirely inside `llm.service` as internal configuration — no other module branches on model or provider name.
+- **LLM gateway:** `llm.service.js` is the only module permitted to import or call OpenRouter. Agents call `llm.service`, never OpenRouter directly. Agent-to-model routing lives entirely inside `llm.service` as internal configuration — no other module branches on model or provider name.
 - **Schema validation:** every agent's LLM response is validated against its JSON schema (AGENT_WORKFLOW.md §2) before being accepted; a validation failure triggers the retry policy (see DECISIONS.md), not a silent pass-through of malformed data.
 
 ## 3. Frontend (React)
@@ -35,7 +35,7 @@
 
 - Unit tests (Jest) required for: each Context Builder (given a mock `RepositoryContext`, does it select the right files and stay under budget?), the Result Aggregator (does it merge correctly and pass the right subset to Improvement Roadmap?), and the exclusion/filtering logic in the Context Engine.
 - At least one integration-style smoke test per API endpoint in API_SPEC.md (can mock the `llm.service` calls).
-- `llm.service` should be tested against a mocked HTTP layer (mocked Puter responses), not live API calls, in CI.
+- `llm.service` should be tested against a mocked HTTP layer (mocked OpenRouter responses), not live API calls, in CI.
 
 ## 6. Commit Conventions
 

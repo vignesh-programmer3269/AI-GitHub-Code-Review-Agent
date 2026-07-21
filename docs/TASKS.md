@@ -23,7 +23,7 @@ Ordered build phases. Each phase should be completable and demoable before movin
 - [ ] Wire `POST /api/repo/analyze` end to end (metadata fetch → context init → planning agent → response).
 
 ## Phase 4 — LLM Gateway (llm.service)
-- [ ] Implement `llm.service.js` as the sole module that communicates with Puter.
+- [x] Implement `llm.service.js` as the sole module that communicates with OpenRouter.
 - [ ] Implement internal agent-to-model routing configuration inside `llm.service` (not exposed to any other module or the frontend).
 - [ ] Implement structured-output enforcement (JSON schema validation) + the retry policy (see DECISIONS.md).
 
@@ -75,4 +75,4 @@ Ordered build phases. Each phase should be completable and demoable before movin
 ## Notes on Sequencing
 
 - Do not start Phase 9+ (frontend interaction with agents) before Phase 6 (orchestrator) is working against at least a mocked `llm.service` — otherwise the frontend has nothing real to integrate against.
-- The LLM gateway (Phase 4) should be working end-to-end against Puter before Phases 5-7 are built out, so the rest of the pipeline can be developed and tested against a real, working gateway from the start.
+- The LLM gateway (Phase 4) should be working end-to-end against OpenRouter before Phases 5-7 are built out, so the rest of the pipeline can be developed and tested against a real, working gateway from the start.
