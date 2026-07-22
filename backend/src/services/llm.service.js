@@ -14,15 +14,15 @@ class LLMService {
         "OPENROUTER_API_KEY is not set. OpenRouter calls will fail without authentication.",
       );
     }
-    
+
     this.client = axios.create({
       baseURL: "https://openrouter.ai/api/v1",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": "Bearer " + config.openRouterApiKey,
+        Authorization: "Bearer " + config.openRouterApiKey,
         "HTTP-Referer": "http://localhost:8000",
-        "X-Title": "AI GitHub Code Review Agent"
-      }
+        "X-Title": "AI GitHub Code Review Agent",
+      },
     });
   }
 
@@ -37,12 +37,12 @@ class LLMService {
     if (!prompt)
       throw new LLMError(ErrorCodes.UNKNOWN_ERROR, "Prompt is required.");
 
-    const targetModel = agentModelConfig[agent] || agentModelConfig.default;
+    const targetModel = "poolside/laguna-xs-2.1:free";
 
     try {
       const response = await this.client.post("/chat/completions", {
         model: targetModel,
-        messages: [{ role: "user", content: prompt }]
+        messages: [{ role: "user", content: prompt }],
       });
 
       const data = response.data;

@@ -12,16 +12,21 @@ import { parseRepoUrl } from "../utils/urlParser.js";
 import { HttpError } from "../utils/HttpError.js";
 import { config } from "../config/index.js";
 
+import { dummyProfiler } from "../utils/performanceProfiler.js";
+
 class ContextEngine {
   /**
    * Creates and initializes a new RepositoryContext.
    * @param {string} repoUrl
+   * @param {Object} profiler
    * @returns {Promise<string>} sessionId
    */
-  async initializeRepository(repoUrl) {
+  async initializeRepository(repoUrl, profiler = dummyProfiler) {
     const { owner, repo } = parseRepoUrl(repoUrl);
 
+    profiler.start("GitHub Metadata");
     const metadata = await getRepoMetadata(owner, repo);
+    profiler.end("GitHub Metadata");
 
     // Size limit check
     if (metadata.size > config.maxRepoSizeKb) {
@@ -34,13 +39,16 @@ class ContextEngine {
 
     const defaultBranch = metadata.default_branch;
 
+    profiler.start("Repository Tree");
+    profiler.start("README");
     const [languages, rawTree, readme] = await Promise.all([
       getRepoLanguages(owner, repo),
-      getRepoTree(owner, repo, defaultBranch),
-      getRepoReadme(owner, repo),
+      getRepoTree(owner, repo, defaultBranch).then(r => { profiler.end("Repository Tree"); return r; }),
+      getRepoReadme(owner, repo).then(r => { profiler.end("README"); return r; })
     ]);
 
     // Filter tree and build file hashes
+    profiler.start("Repository Filter");
     const filteredTree = [];
     const fileHashes = {};
 
@@ -59,6 +67,7 @@ class ContextEngine {
         }
       }
     }
+    profiler.end("Repository Filter");
 
     const sessionId = uuidv4();
 

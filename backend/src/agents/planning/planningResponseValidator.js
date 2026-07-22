@@ -64,9 +64,10 @@ const planningSchema = z.object({
   })).default([])
 });
 
-export const validatePlanningResponse = (rawResponse) => {
+export const validatePlanningResponse = (rawResponse, profiler = { start: () => {}, end: () => {} }) => {
   let jsonString = rawResponse;
 
+  profiler.start("Response Parsing");
   // Clean Markdown formatting (e.g. ```json ... ```)
   if (jsonString.includes("```")) {
     const match = jsonString.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
@@ -79,14 +80,18 @@ export const validatePlanningResponse = (rawResponse) => {
   try {
     parsedJson = JSON.parse(jsonString);
   } catch (err) {
+    profiler.end("Response Parsing");
     console.error("RAW JSON STRING FAILED PARSE:", jsonString);
     throw new HttpError(500, "LLM_PARSE_ERROR", "Failed to parse JSON response from LLM. Raw Output: " + jsonString.substring(0, 500));
   }
+  profiler.end("Response Parsing");
 
   // Validate and apply defaults
+  profiler.start("Response Validation");
   const result = planningSchema.safeParse(parsedJson);
 
   if (!result.success) {
+    profiler.end("Response Validation");
     // If we fail strictly, we shouldn't crash completely. 
     // Wait, the prompt says "Throwing meaningful validation errors". 
     // We will throw HttpError.
@@ -94,6 +99,7 @@ export const validatePlanningResponse = (rawResponse) => {
     console.error("ZOD VALIDATION FAILED. RAW JSON WAS:", jsonString);
     throw new HttpError(500, "LLM_VALIDATION_ERROR", `LLM response failed schema validation: ${errorMessage}`);
   }
+  profiler.end("Response Validation");
 
   return result.data;
 };

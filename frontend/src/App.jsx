@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import Home from "./pages/Home";
+import LoadingAnalysis from "./pages/LoadingAnalysis";
 import Dashboard from "./pages/Dashboard";
 import Planning from "./pages/Planning";
 
@@ -9,6 +10,7 @@ function App() {
     <>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/loading" element={<LoadingAnalysis />} />
         <Route path="/planning" element={<Planning />} />
         <Route path="/dashboard" element={<Dashboard />} />
       </Routes>

@@ -4,15 +4,25 @@ import { contextEngine } from "../context/contextEngine.js";
 import { planningAgent } from "../agents/planning/planningAgent.js";
 import { HttpError } from "../utils/HttpError.js";
 
+import { PerformanceProfiler } from "../utils/performanceProfiler.js";
+
 const analyzeSchema = z.object({
   repoUrl: z.string().min(1, "repoUrl is required"),
 });
 
 export const analyzeRepo = async (req, res, next) => {
+  const profiler = new PerformanceProfiler();
+
   try {
+    profiler.start("Repository Validation");
     const { repoUrl } = analyzeSchema.parse(req.body);
-    const sessionId = await contextEngine.initializeRepository(repoUrl);
-    const result = await planningAgent.run(sessionId);
+    profiler.end("Repository Validation");
+
+    const sessionId = await contextEngine.initializeRepository(
+      repoUrl,
+      profiler,
+    );
+    const result = await planningAgent.run(sessionId, profiler);
 
     res.status(StatusCodes.OK).json(result);
   } catch (err) {
@@ -26,5 +36,7 @@ export const analyzeRepo = async (req, res, next) => {
       );
     }
     return next(err);
+  } finally {
+    profiler.printReport("Planning Performance Report");
   }
 };

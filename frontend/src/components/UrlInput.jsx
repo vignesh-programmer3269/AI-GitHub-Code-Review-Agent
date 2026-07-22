@@ -36,40 +36,14 @@ export default function UrlInput() {
 
   const urlValue = watch("url");
 
-  const onSubmit = async (data) => {
-    setIsLoading(true);
-
-    try {
-      // Clean up URL (remove trailing slash if any)
-      const cleanUrl = data.url.replace(/\/$/, "");
-      const response = await repoService.analyze(cleanUrl);
-
-      toast.success("Repository analyzed!");
-      navigate("/planning", {
-        state: {
-          repoUrl: cleanUrl,
-          sessionId: response.sessionId,
-          planning: response.planning,
-        },
-      });
-    } catch (error) {
-      console.error(error);
-      const message =
-        error.response?.data?.error?.message ||
-        error.response?.data?.message ||
-        "Failed to validate repository. Ensure it is public and exists.";
-
-      toast.error(message, {
-        icon: "⚠️",
-        style: {
-          background: "var(--color-bg-card)",
-          color: "var(--color-text-primary)",
-          border: "1px solid var(--color-border-default)",
-        },
-      });
-    } finally {
-      setIsLoading(false);
-    }
+  const onSubmit = (data) => {
+    // Clean up URL (remove trailing slash if any)
+    const cleanUrl = data.url.replace(/\/$/, "");
+    navigate("/loading", {
+      state: {
+        repoUrl: cleanUrl,
+      },
+    });
   };
 
   return (
