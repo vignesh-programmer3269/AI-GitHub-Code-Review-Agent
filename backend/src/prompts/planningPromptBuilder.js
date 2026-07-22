@@ -13,7 +13,7 @@ You must:
 1. Understand the repository's main purpose.
 2. Identify the core technology stack, programming languages, and frameworks.
 3. Determine the architectural style and overall complexity.
-4. Recommend which specialized agents should be executed based on the project's nature.
+4. You MUST include ALL 6 available specialized agents (codeReview, security, performance, architecture, documentation, improvementRoadmap) in the recommendedAnalyses array. Evaluate each agent and set selectedByDefault to true if it is highly recommended for this project, or false if it is not.
 5. Provide a health score and detailed technology stack breakdown.
 
 You must respond EXCLUSIVELY in valid JSON that strictly matches the expected schema. Do not include markdown formatting or extra text outside of the JSON block.`;
@@ -30,34 +30,50 @@ ${JSON.stringify(planningContext, null, 2)}`;
       repositoryType: {
         type: "string",
         enum: [
-          "Frontend", "Backend", "Full Stack", "CLI", "Library", "Package",
-          "Microservice", "AI Application", "AI Agent", "Browser Extension",
-          "Mobile App", "Desktop App", "Script", "Framework", "SDK", "Other"
-        ]
+          "Frontend",
+          "Backend",
+          "Full Stack",
+          "CLI",
+          "Library",
+          "Package",
+          "Microservice",
+          "AI Application",
+          "AI Agent",
+          "Browser Extension",
+          "Mobile App",
+          "Desktop App",
+          "Script",
+          "Framework",
+          "SDK",
+          "Other",
+        ],
       },
       repositorySummary: {
         type: "string",
-        description: "A very concise summary explaining what the repository does, limited to approximately 100 words."
+        description:
+          "A very concise summary explaining what the repository does, limited to approximately 100 words.",
       },
       architectureSummary: {
         type: "string",
-        description: "Describe the architecture style, project organization, and overall design concisely in under 100 words."
+        description:
+          "Describe the architecture style, project organization, and overall design concisely in under 100 words.",
       },
       folderOrganization: {
         type: "string",
-        description: "Describe how the folders and files are organized concisely in under 100 words."
+        description:
+          "Describe how the folders and files are organized concisely in under 100 words.",
       },
       complexity: {
         type: "string",
-        enum: ["Simple", "Moderate", "Medium", "Complex", "Enterprise"]
+        enum: ["Simple", "Moderate", "Medium", "Complex", "Enterprise"],
       },
       repositoryHealth: {
         type: "object",
         properties: {
           score: { type: "number", description: "0-100" },
-          reason: { type: "string" }
+          reason: { type: "string" },
         },
-        required: ["score", "reason"]
+        required: ["score", "reason"],
       },
       technologyStack: {
         type: "object",
@@ -72,12 +88,21 @@ ${JSON.stringify(planningContext, null, 2)}`;
           buildTool: { type: "array", items: { type: "string" } },
           deployment: { type: "array", items: { type: "string" } },
           ciCd: { type: "array", items: { type: "string" } },
-          containerization: { type: "array", items: { type: "string" } }
+          containerization: { type: "array", items: { type: "string" } },
         },
         required: [
-          "frontend", "backend", "database", "frameworks", "libraries", 
-          "runtime", "packageManager", "buildTool", "deployment", "ciCd", "containerization"
-        ]
+          "frontend",
+          "backend",
+          "database",
+          "frameworks",
+          "libraries",
+          "runtime",
+          "packageManager",
+          "buildTool",
+          "deployment",
+          "ciCd",
+          "containerization",
+        ],
       },
       recommendedAnalyses: {
         type: "array",
@@ -86,10 +111,20 @@ ${JSON.stringify(planningContext, null, 2)}`;
           properties: {
             agentId: {
               type: "string",
-              enum: ["codeReview", "security", "performance", "architecture", "documentation", "improvementRoadmap"]
+              enum: [
+                "codeReview",
+                "security",
+                "performance",
+                "architecture",
+                "documentation",
+                "improvementRoadmap",
+              ],
             },
             agentName: { type: "string" },
-            priority: { type: "string", enum: ["Critical", "High", "Medium", "Low"] },
+            priority: {
+              type: "string",
+              enum: ["Critical", "High", "Medium", "Low"],
+            },
             selectedByDefault: { type: "boolean" },
             estimatedDuration: { type: "string" },
             estimatedTokens: { type: "number" },
@@ -100,22 +135,40 @@ ${JSON.stringify(planningContext, null, 2)}`;
                 purpose: { type: "string" },
                 analyzes: { type: "string" },
                 typicalOutput: { type: "string" },
-                recommendationReason: { type: "string" }
+                recommendationReason: { type: "string" },
               },
-              required: ["purpose", "analyzes", "typicalOutput", "recommendationReason"]
-            }
+              required: [
+                "purpose",
+                "analyzes",
+                "typicalOutput",
+                "recommendationReason",
+              ],
+            },
           },
           required: [
-            "agentId", "agentName", "priority", "selectedByDefault", 
-            "estimatedDuration", "estimatedTokens", "description", "info"
-          ]
-        }
-      }
+            "agentId",
+            "agentName",
+            "priority",
+            "selectedByDefault",
+            "estimatedDuration",
+            "estimatedTokens",
+            "description",
+            "info",
+          ],
+        },
+      },
     },
     required: [
-      "repositoryName", "repositoryOwner", "repositoryType", 
-      "repositorySummary", "architectureSummary", "folderOrganization", "complexity", 
-      "repositoryHealth", "technologyStack", "recommendedAnalyses"
+      "repositoryName",
+      "repositoryOwner",
+      "repositoryType",
+      "repositorySummary",
+      "architectureSummary",
+      "folderOrganization",
+      "complexity",
+      "repositoryHealth",
+      "technologyStack",
+      "recommendedAnalyses",
     ],
     additionalProperties: false,
   };
